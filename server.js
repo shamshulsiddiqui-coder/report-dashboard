@@ -76,6 +76,23 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+// Slack — list channels
+app.get('/api/slack-channels', async (req, res) => {
+  const token = req.query.token;
+  if (!token) return res.status(400).json({ error: 'Missing token' });
+  try {
+    const response = await fetch('https://slack.com/api/conversations.list?types=public_channel,private_channel&limit=200&exclude_archived=true', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await response.json();
+    if (!data.ok) return res.status(400).json({ error: data.error });
+    const channels = data.channels.map(c => ({ id: c.id, name: c.name })).sort((a,b) => a.name.localeCompare(b.name));
+    res.json({ channels });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Slack — send message proxy
 app.post('/api/slack', async (req, res) => {
   const { token, channel, text } = req.body;
