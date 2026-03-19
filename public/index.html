@@ -1446,9 +1446,7 @@ function renderInboundReport() {
   const queueSet = new Set();
 
   const dateInitiate   = {}; // all rows
-  const dateNotLanded  = {}; // queue blank (all)
-  const dateNotLandedWH  = {}; // queue blank - working hours (11 AM to 9 PM)
-  const dateNotLandedNWH = {}; // queue blank - non working hours (9:00:01 PM to 10:59:59 AM)
+  const dateNotLanded  = {}; // queue blank
   const dateReceived   = {}; // queue not blank
   const dateAnswered   = {}; // agent not blank
   const agentMap       = {};
@@ -1472,41 +1470,6 @@ function renderInboundReport() {
     if (!queue) {
       // Not Landed in Queue
       dateNotLanded[dk] = (dateNotLanded[dk] || 0) + 1;
-
-      // Split by working hours vs non-working hours using time from Column D
-      const timePart = rawDate.split(' ').slice(1).join(' ').trim();
-      let isWorkingHour = false;
-      if (timePart) {
-        // Parse time — supports "HH:MM:SS", "HH:MM", "h:mm:ss AM/PM", "h:mm AM/PM"
-        let hours = -1, minutes = 0, seconds = 0;
-        const ampmMatch = timePart.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?\s*(AM|PM)/i);
-        const h24Match  = timePart.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
-        if (ampmMatch) {
-          hours = parseInt(ampmMatch[1]);
-          minutes = parseInt(ampmMatch[2]);
-          seconds = parseInt(ampmMatch[3] || '0');
-          const ampm = ampmMatch[4].toUpperCase();
-          if (ampm === 'AM' && hours === 12) hours = 0;
-          if (ampm === 'PM' && hours !== 12) hours += 12;
-        } else if (h24Match) {
-          hours = parseInt(h24Match[1]);
-          minutes = parseInt(h24Match[2]);
-          seconds = parseInt(h24Match[3] || '0');
-        }
-        // Working hours: 11:00:00 AM (11:00:00) to 9:00:00 PM (21:00:00)
-        // Non-working: 9:00:01 PM (21:00:01) to 10:59:59 AM (10:59:59)
-        if (hours >= 0) {
-          const totalSecs = hours * 3600 + minutes * 60 + seconds;
-          const whStart = 11 * 3600;          // 11:00:00
-          const whEnd   = 21 * 3600;          // 21:00:00
-          isWorkingHour = (totalSecs >= whStart && totalSecs <= whEnd);
-        }
-      }
-      if (isWorkingHour) {
-        dateNotLandedWH[dk] = (dateNotLandedWH[dk] || 0) + 1;
-      } else {
-        dateNotLandedNWH[dk] = (dateNotLandedNWH[dk] || 0) + 1;
-      }
     } else {
       // Landed in Queue = Received
       dateReceived[dk] = (dateReceived[dk] || 0) + 1;
@@ -1534,15 +1497,13 @@ function renderInboundReport() {
 
   const agentTotals   = {};
   agents.forEach(a => agentTotals[a] = Object.values(agentMap[a]).reduce((s,v)=>s+v,0));
-  const grandInitiate    = Object.values(dateInitiate).reduce((s,v)=>s+v,0);
-  const grandNotLanded   = Object.values(dateNotLanded).reduce((s,v)=>s+v,0);
-  const grandNotLandedWH = Object.values(dateNotLandedWH).reduce((s,v)=>s+v,0);
-  const grandNotLandedNWH= Object.values(dateNotLandedNWH).reduce((s,v)=>s+v,0);
-  const grandReceived    = Object.values(dateReceived).reduce((s,v)=>s+v,0);
-  const grandAnswered    = agents.reduce((s,a)=>s+agentTotals[a],0);
+  const grandInitiate  = Object.values(dateInitiate).reduce((s,v)=>s+v,0);
+  const grandNotLanded = Object.values(dateNotLanded).reduce((s,v)=>s+v,0);
+  const grandReceived  = Object.values(dateReceived).reduce((s,v)=>s+v,0);
+  const grandAnswered  = agents.reduce((s,a)=>s+agentTotals[a],0);
 
   // All metrics and agents lists for filters
-  const allMetrics = ['Total Call Initiate','Call Not Landed in Queue','Call Not Landed in Queue in Working Hours','Call Not Landed in Queue in Non Working Hours','Total Call Received','Total Call Answered','Answered %'];
+  const allMetrics = ['Total Call Initiate','Call Not Landed in Queue','Total Call Received','Total Call Answered','Answered %'];
 
   outputEl.innerHTML = `
 
@@ -1578,16 +1539,6 @@ function renderInboundReport() {
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue</td>
             ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dateNotLanded[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${grandNotLanded}</td>
-          </tr>
-          <tr data-metric="Call Not Landed in Queue in Working Hours">
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fb923c;padding-left:28px;font-size:12px;">↳ In Working Hours (11AM–9PM)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dateNotLandedWH[d]||0}</td>`).join('')}
-            <td style="text-align:right;font-weight:700;color:#fb923c;background:#1a2744;">${grandNotLandedWH}</td>
-          </tr>
-          <tr data-metric="Call Not Landed in Queue in Non Working Hours">
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#c084fc;padding-left:28px;font-size:12px;">↳ In Non Working Hours (9PM–11AM)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#c084fc;">${dateNotLandedNWH[d]||0}</td>`).join('')}
-            <td style="text-align:right;font-weight:700;color:#c084fc;background:#1a2744;">${grandNotLandedNWH}</td>
           </tr>
           <tr data-metric="Total Call Received">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
