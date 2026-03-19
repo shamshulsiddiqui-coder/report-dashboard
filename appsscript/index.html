@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shamshul</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #1a1400; color: #e2e8f0; min-height: 100vh; transition: background 0.3s, color 0.3s; }
+
+    /* ── LIGHT THEME ── */
+    body.light { background: #fffbeb; color: #1c1917; }
+    body.light header { background: #fef3c7; border-color: #f59e0b; }
+    body.light header h1 { color: #92400e; }
+    body.light .slogan { background: #fde68a; color: #78350f; }
+    body.light .tab-btn { border-color: #d97706; color: #92400e; background: transparent; }
+    body.light .tab-btn.active { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+    body.light .tab-btn:hover:not(.active) { border-color: #f59e0b; color: #78350f; }
+    body.light .main { color: #1c1917; }
+    body.light .connect-bar,
+    body.light .panel,body.light .report-table-panel,body.light .report-chart-panel,
+    body.light .full-panel,body.light .summary-card,body.light .report-config,
+    body.light .card,body.light #status-bar,body.light #dash-filters,
+    body.light .command-section,body.light .report-summary .summary-card { background: #fff8e1 !important; border-color: #fcd34d !important; color: #1c1917; }
+    body.light .panel-header,body.light .report-chart-panel .panel-header,
+    body.light .report-table-panel .panel-header { border-color: #fcd34d !important; }
+    body.light thead th,body.light .report-table thead th { background: #fef3c7 !important; color: #92400e !important; }
+    body.light tbody tr:hover,body.light .report-table tbody tr:hover { background: #fde68a !important; }
+    body.light .report-table .td-date { background: #fff8e1 !important; color: #78350f !important; }
+    body.light .report-table tbody tr:hover .td-date { background: #fde68a !important; }
+    body.light tbody td,body.light .report-table tbody td { color: #1c1917; }
+    body.light .connect-bar input[type="text"],body.light .config-item input,
+    body.light .config-item select,body.light #sheet-url,body.light #cmd-input { background: #fffbeb !important; border-color: #fcd34d !important; color: #1c1917 !important; }
+    body.light .hint-chip { background: #fef3c7 !important; border-color: #fcd34d !important; color: #92400e !important; }
+    body.light .panel-header h3,body.light .s-label,body.light .card .card-label { color: #78350f !important; }
+    body.light .card .card-value,body.light .s-value { color: #1c1917 !important; }
+    body.light #status-text,body.light #last-updated { color: #92400e; }
+    body.light .status-dot.green { background: #16a34a !important; box-shadow: 0 0 6px #16a34a88 !important; }
+    body.light .empty-state h3 { color: #92400e; }
+    body.light .empty-state p { color: #78350f; }
+    body.light .report-table tfoot td { background: #fde68a !important; color: #1c1917 !important; border-color: #f59e0b !important; }
+    body.light .report-table .td-total { background: #fde68a !important; color: #1c1917 !important; }
+    body.light .report-table th[style*="background:#1a2744"] { background: #fde68a !important; color: #92400e !important; }
+    body.light #theme-toggle { border-color: #d97706; color: #92400e; }
+
+    header {
+      background: #1a1400; border-bottom: 2px solid #f59e0b;
+      padding: 12px 28px; display: flex; align-items: center; gap: 20px;
+    }
+    header h1 { font-size: 22px; font-weight: 800; color: #fbbf24; margin-right: auto; letter-spacing: 1px; }
+    .slogan { font-size: 12px; color: #92400e; font-style: italic; font-weight: 500; background:#fef3c7; padding:3px 10px; border-radius:20px; color:#92400e; white-space:nowrap; }
+
+    .tabs { display: flex; gap: 4px; }
+    .tab-btn { padding: 8px 20px; border-radius: 8px; border: 1px solid #78350f; background: transparent; color: #d97706; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .tab-btn.active { background: #f59e0b; border-color: #f59e0b; color: #1a1400; }
+    .tab-btn:hover:not(.active) { border-color: #fbbf24; color: #fbbf24; }
+
+    .main { padding: 28px; max-width: 1400px; margin: 0 auto; }
+    .connect-bar { background: #1f1700 !important; border-color: #78350f !important; }
+    .panel, .report-table-panel, .report-chart-panel, .full-panel, .summary-card, .report-config { background: #1f1700 !important; border-color: #78350f !important; }
+    .panel-header, .report-chart-panel .panel-header, .report-table-panel .panel-header { border-color: #78350f !important; }
+    thead th, .report-table thead th { background: #120e00 !important; }
+    tbody tr:hover, .report-table tbody tr:hover { background: #2d1f00 !important; }
+    .report-table tbody tr:hover .td-date { background: #2d1f00 !important; }
+    .report-table .td-date { background: #1f1700 !important; }
+    #status-bar, #dash-filters, .command-section { background: #1f1700 !important; border-color: #78350f !important; }
+    .connect-bar input[type="text"], .config-item input, .config-item select { background: #120e00 !important; border-color: #78350f !important; }
+    .hint-chip { background: #120e00 !important; border-color: #78350f !important; }
+    .btn-primary { background: #f59e0b !important; color: #1a1400 !important; }
+    .btn-primary:hover { background: #d97706 !important; }
+    .btn-generate { background: #f59e0b !important; color: #1a1400 !important; }
+    .btn-generate:hover { background: #d97706 !important; }
+    .command-section { border-color: #f59e0b !important; }
+    .command-section-title { color: #f59e0b !important; }
+    .status-dot.green { background: #f59e0b !important; box-shadow: 0 0 6px #f59e0b88 !important; }
+    input:checked + .slider { background: #f59e0b !important; }
+    #countdown-badge { color: #f59e0b !important; border-color: #78350f !important; background: #1f1700 !important; }
+    .card { background: #1f1700 !important; border-color: #78350f !important; }
+    .report-summary .summary-card.blue { border-color: #92400e !important; }
+    .report-summary .summary-card.yellow { border-color: #92400e !important; }
+    .report-summary .summary-card.yellow .s-value { color: #f59e0b !important; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Connect bar */
+    .connect-bar {
+      background: #1e293b; border: 1px solid #334155;
+      border-radius: 12px; padding: 20px;
+      display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .connect-bar input[type="text"] {
+      flex: 1; min-width: 280px; padding: 10px 16px;
+      background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+      color: #e2e8f0; font-size: 14px; outline: none; transition: border-color 0.2s;
+    }
+    .connect-bar input[type="text"]:focus { border-color: #6366f1; }
+    .connect-bar input[type="text"]::placeholder { color: #475569; }
+
+    .btn-primary { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; }
+    .btn-primary:hover { background: #4f46e5; }
+
+    .refresh-controls { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .refresh-controls label { font-size: 13px; color: #94a3b8; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .refresh-controls select { padding: 8px 12px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: #e2e8f0; font-size: 13px; outline: none; cursor: pointer; }
+    .toggle { position: relative; width: 40px; height: 22px; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #334155; border-radius: 22px; cursor: pointer; transition: background 0.3s; }
+    .slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: transform 0.3s; }
+    input:checked + .slider { background: #6366f1; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    /* Status */
+    #status-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 13px; color: #64748b; min-height: 24px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b; }
+    .status-dot.green { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+    .status-dot.red { background: #ef4444; }
+    .status-dot.pulse { animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    #countdown-badge { background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 4px 10px; font-size: 12px; color: #6366f1; display: none; }
+
+    /* Dashboard table */
+    .panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+    .panel-header { padding: 16px 20px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+    .panel-header h3 { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+    .table-wrap { overflow-x: auto; max-height: 500px; overflow-y: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { background: #0f172a; padding: 10px 14px; text-align: left; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; position: sticky; top: 0; white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid #0f172a; }
+    tbody tr:hover { background: #1a2744; }
+    tbody td { padding: 10px 14px; color: #cbd5e1; white-space: nowrap; }
+
+    .empty-state { text-align: center; padding: 80px 20px; color: #475569; }
+    .empty-state svg { margin-bottom: 16px; opacity: 0.4; }
+    .empty-state h3 { font-size: 16px; margin-bottom: 8px; color: #64748b; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── REPORT TAB ── */
+    .report-top { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+    .report-top h2 { font-size: 18px; font-weight: 700; color: #f1f5f9; margin-right: auto; }
+
+    .btn-generate { padding: 10px 28px; background: #22c55e; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+    .btn-generate:hover { background: #16a34a; }
+
+    /* Summary cards */
+    .report-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .summary-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; }
+    .summary-card .s-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .summary-card .s-value { font-size: 26px; font-weight: 700; color: #f1f5f9; }
+    .summary-card .s-sub { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+    .summary-card.green { border-color: #22c55e44; }
+    .summary-card.green .s-value { color: #22c55e; }
+    .summary-card.blue { border-color: #6366f144; }
+    .summary-card.blue .s-value { color: #818cf8; }
+    .summary-card.yellow { border-color: #eab30844; }
+    .summary-card.yellow .s-value { color: #fbbf24; }
+
+    /* Report charts */
+    .report-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .report-charts { grid-template-columns: 1fr; } }
+    .report-chart-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+    .report-chart-panel .panel-header { padding: 14px 18px; border-bottom: 1px solid #334155; }
+    .report-chart-panel .panel-header h3 { font-size: 13px; font-weight: 600; color: #f1f5f9; }
+    .report-chart-body { padding: 16px; }
+    .report-chart-wrap { position: relative; height: 240px; }
+
+    /* Report table */
+    .report-table-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+    .report-table-wrap { overflow-x: auto; max-height: 480px; overflow-y: auto; }
+    .report-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .report-table thead th { background: #0f172a; padding: 12px 16px; text-align: left; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; position: sticky; top: 0; white-space: nowrap; z-index: 2; }
+    .report-table thead th:first-child { position: sticky; left: 0; top: 0; z-index: 3; background: #0a1020; }
+    .report-table tbody tr { border-bottom: 1px solid #0f172a; }
+    .report-table tbody tr:hover { background: #1a2744; }
+    .report-table tbody td { padding: 11px 16px; color: #cbd5e1; }
+    .report-table .td-date { color: #f1f5f9; font-weight: 700; position: sticky; left: 0; background: #1e293b; z-index: 1; }
+    .report-table .td-total { background: #1a2744; font-weight: 700; }
+    .report-table tbody tr:hover .td-date { background: #1a2744; }
+    .report-table .td-num { text-align: right; }
+    .report-table .td-green { color: #22c55e; text-align: right; }
+    .report-table .td-blue { color: #818cf8; text-align: right; }
+    .report-table .td-yellow { color: #fbbf24; text-align: right; }
+    .report-table tfoot td { background: #1a2744; font-weight: 700; color: #f1f5f9; padding: 12px 16px; border-top: 2px solid #334155; }
+
+    .no-data-msg { text-align: center; padding: 60px 20px; color: #475569; }
+    .no-data-msg h3 { font-size: 15px; color: #64748b; margin-bottom: 8px; }
+    .no-data-msg p { font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Shamshul</h1>
+  <span class="slogan">⚡ WIOM — Ghar Ka Net</span>
+  <button id="theme-toggle" onclick="toggleTheme()" style="padding:6px 14px;border-radius:8px;border:1px solid #78350f;background:transparent;color:#fbbf24;font-size:13px;cursor:pointer;">🌙 Dark</button>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
+    <button class="tab-btn" onclick="switchTab('report')">PTL Management Report</button>
+    <button class="tab-btn" onclick="switchTab('agentreport')">Agent Wise Report</button>
+    <button class="tab-btn" onclick="switchTab('analysis')">Analysis</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- ══════════ DASHBOARD TAB ══════════ -->
+  <div class="tab-panel active" id="tab-dashboard">
+
+    <div class="connect-bar">
+      <input type="text" id="sheet-url" placeholder="Paste Google Sheet URL here..." />
+      <button class="btn-primary" id="connect-btn">Connect Sheet</button>
+      <div class="refresh-controls">
+        <label>
+          <span>Auto-refresh</span>
+          <label class="toggle">
+            <input type="checkbox" id="auto-refresh-toggle" />
+            <span class="slider"></span>
+          </label>
+        </label>
+        <select id="refresh-interval">
+          <option value="15">15s</option>
+          <option value="30" selected>30s</option>
+          <option value="60">1 min</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+      <span id="countdown-badge">Next refresh: <span id="countdown">--</span>s</span>
+    </div>
+
+    <div id="status-bar">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">No sheet connected. Paste a Google Sheet URL above.</span>
+      <span id="last-updated"></span>
+    </div>
+
+    <!-- Filters -->
+    <div id="dash-filters" style="display:none;background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;margin-bottom:16px;display:none;gap:16px;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Date From</div>
+        <input type="date" id="dash-date-from" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" onchange="applyDashFilters()" />
+      </div>
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Date To</div>
+        <input type="date" id="dash-date-to" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" onchange="applyDashFilters()" />
+      </div>
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Landing Folder (Col K)</div>
+        <select id="dash-landing" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;min-width:160px;" onchange="applyDashFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">Sub Status (Col CG)</div>
+        <select id="dash-status" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;min-width:160px;" onchange="applyDashFilters()">
+          <option value="">All</option>
+        </select>
+      </div>
+      <button onclick="clearDashFilters()" style="padding:8px 16px;background:transparent;color:#94a3b8;border:1px solid #475569;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:1px;">Clear</button>
+      <span id="dash-filter-count" style="font-size:12px;color:#6366f1;align-self:center;"></span>
+    </div>
+
+    <div class="panel" id="raw-table-panel" style="display:none">
+      <div class="panel-header">
+        <h3>Raw Data</h3>
+        <span style="font-size:12px;color:#64748b" id="row-count"></span>
+      </div>
+      <div class="table-wrap" id="raw-table"></div>
+    </div>
+
+    <div id="empty-state" class="empty-state">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+      </svg>
+      <h3>Connect a Google Sheet</h3>
+      <p>Paste any public Google Sheet URL above and click "Connect Sheet"</p>
+    </div>
+
+  </div>
+
+  <!-- ══════════ AGENT WISE REPORT TAB ══════════ -->
+  <div class="tab-panel" id="tab-agentreport">
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+      <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-right:auto;">Agent Wise Report</h2>
+      <button onclick="generateAgentReport()" style="padding:10px 28px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Generate Report</button>
+    </div>
+
+    <!-- Date Filter -->
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">From</div>
+        <input type="date" id="agent-date-from" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+      </div>
+      <div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;">To</div>
+        <input type="date" id="agent-date-to" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+      </div>
+      <button onclick="document.getElementById('agent-date-from').value='';document.getElementById('agent-date-to').value='';generateAgentReport();" style="padding:8px 16px;background:transparent;color:#94a3b8;border:1px solid #475569;border-radius:8px;font-size:13px;cursor:pointer;margin-top:18px;">Clear</button>
+    </div>
+
+    <!-- Output -->
+    <div id="agent-report-output">
+      <div class="no-data-msg">
+        <h3>No report yet</h3>
+        <p>Connect a Google Sheet from Dashboard tab, then click "Generate Report"</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ ANALYSIS TAB ══════════ -->
+  <div class="tab-panel" id="tab-analysis">
+
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+      <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-right:auto;">New Project Analysis</h2>
+      <button onclick="runAnalysis()" style="padding:10px 24px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Run AI Analysis</button>
+      <button onclick="stopAnalysis()" id="stop-btn" style="padding:10px 16px;background:transparent;color:#f87171;border:1px solid #f87171;border-radius:8px;font-size:13px;cursor:pointer;display:none;">Stop</button>
+    </div>
+
+    <!-- Config -->
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px 20px;margin-bottom:20px;">
+      <div style="font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;font-weight:600;">Configuration</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        <div>
+          <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Anthropic API Key</label>
+          <input type="password" id="ana-api-key" placeholder="sk-ant-..." style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Landing Folder Col (K) — filter value</label>
+          <input type="text" id="ana-lf-value" placeholder="New Project" value="New Project" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Question by Partner Col</label>
+          <input type="text" id="ana-q-col" value="BX" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;text-transform:uppercase;" />
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Phone Col</label>
+          <input type="text" id="ana-phone-col" value="CB" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;text-transform:uppercase;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div id="ana-progress" style="display:none;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+        <div style="width:10px;height:10px;border-radius:50%;background:#6366f1;animation:pulse 1s infinite;"></div>
+        <span id="ana-progress-text" style="font-size:13px;color:#94a3b8;">Processing...</span>
+      </div>
+      <div style="background:#0f172a;border-radius:6px;height:6px;overflow:hidden;">
+        <div id="ana-progress-bar" style="height:100%;background:#6366f1;width:0%;transition:width 0.3s;border-radius:6px;"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="ana-output">
+      <div class="no-data-msg">
+        <h3>No analysis yet</h3>
+        <p>Connect a Google Sheet, enter your API key, then click "Run AI Analysis"</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ REPORT TAB ══════════ -->
+  <div class="tab-panel" id="tab-report">
+
+    <div class="report-top">
+      <h2>PTL Management Report</h2>
+    </div>
+
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:13px;color:#64748b;">From</label>
+        <input type="date" id="filter-from" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:13px;color:#64748b;">To</label>
+        <input type="date" id="filter-to" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+      </div>
+      <button class="btn-generate" onclick="generateReport()">Generate Report</button>
+      <button onclick="clearDateFilter()" style="padding:8px 16px;background:transparent;color:#94a3b8;border:1px solid #475569;border-radius:8px;font-size:13px;cursor:pointer;">Clear Filter</button>
+    </div>
+
+    <div id="report-output">
+      <div class="no-data-msg">
+        <h3>No report yet</h3>
+        <p>Connect a Google Sheet from the Dashboard tab, then click "Generate Report"</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+let rawData = [], rawHeaders = [];
+let countdownTimer = null, countdownValue = 30;
+let currentSheetUrl = '';
+let isLoading = false;
+let reportChart1 = null, reportChart2 = null;
+
+const COL_DATE   = 'B';
+const COL_STATUS = 'CG';
+const COL_TIME   = 'T';
+
+// ── THEME ──
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = isLight ? '🌑 Dark' : '🌙 Dark';
+  try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch(e){}
+}
+try { if (localStorage.getItem('theme') === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').textContent = '🌑 Dark'; } } catch(e){}
+
+// ── TAB SWITCH ──
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  const idx = { dashboard: 0, report: 1, agentreport: 2, analysis: 3 }[name] ?? 0;
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+}
+
+// ── SHEET CONNECT ──
+try { const savedUrl = localStorage.getItem('sheetUrl'); if (savedUrl) { document.getElementById('sheet-url').value = savedUrl; loadSheet(savedUrl); } } catch(e){}
+
+document.getElementById('connect-btn').addEventListener('click', () => {
+  const url = document.getElementById('sheet-url').value.trim();
+  if (!url) return setStatus('red', 'Please enter a Google Sheet URL');
+  currentSheetUrl = url;
+  try { localStorage.setItem('sheetUrl', url); } catch(e){}
+  loadSheet(url);
+});
+document.getElementById('sheet-url').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('connect-btn').click(); });
+
+function sheetUrlToCsv(url) {
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (!m) return null;
+  const gm = url.match(/[#&?]gid=(\d+)/);
+  return `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gm ? gm[1] : '0'}`;
+}
+
+async function loadSheet(url) {
+  if (isLoading) return;
+  isLoading = true; currentSheetUrl = url;
+  const csvUrl = sheetUrlToCsv(url);
+  if (!csvUrl) { setStatus('red', 'Invalid Google Sheet URL'); isLoading = false; return; }
+  setStatus('pulse', 'Fetching data...');
+  try {
+    const res = await fetch(csvUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status} — make sure sheet is shared publicly`);
+    const text = await res.text();
+    if (!text.trim() || text.trim().startsWith('<')) throw new Error('Could not read sheet — set sharing to "Anyone with the link can view"');
+    const { headers, rows } = parseCsv(text);
+    rawHeaders = headers; rawData = rows;
+    renderRawTable(headers, rows);
+    setStatus('green', `Connected — ${rows.length} rows, ${headers.length} columns`);
+    document.getElementById('last-updated').textContent = `  Last updated: ${new Date().toLocaleTimeString()}`;
+  } catch (err) { setStatus('red', `Error: ${err.message}`); }
+  isLoading = false;
+}
+
+function renderRawTable(headers, rows) {
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('raw-table-panel').style.display = 'block';
+  const colK  = colLetterToIndex('K');
+  const colCG = colLetterToIndex('CG');
+  const landingHeader = headers[colK]  || '';
+  const statusHeader2 = headers[colCG] || '';
+  populateDropdown('dash-landing', [...new Set(rawData.map(r => String(r[landingHeader] || '').trim()))].filter(Boolean).sort());
+  populateDropdown('dash-status',  [...new Set(rawData.map(r => String(r[statusHeader2] || '').trim()))].filter(Boolean).sort());
+  const filtersEl = document.getElementById('dash-filters');
+  filtersEl.style.display = 'flex';
+  showFilteredTable(headers, rows);
+}
+
+function populateDropdown(id, values) {
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  sel.innerHTML = '<option value="">All</option>';
+  values.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    if (v === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+function applyDashFilters() {
+  if (!rawData.length) return;
+  const colB  = colLetterToIndex('B');
+  const colK  = colLetterToIndex('K');
+  const colCG = colLetterToIndex('CG');
+  const dateHeader2   = rawHeaders[colB]  || '';
+  const landingHeader = rawHeaders[colK]  || '';
+  const statusHeader2 = rawHeaders[colCG] || '';
+  const fromVal = document.getElementById('dash-date-from').value;
+  const toVal   = document.getElementById('dash-date-to').value;
+  const landing = document.getElementById('dash-landing').value;
+  const status  = document.getElementById('dash-status').value;
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate   = toVal   ? new Date(toVal)   : null;
+  const filtered = rawData.filter(row => {
+    if (fromDate || toDate) {
+      const dk = normalizeDate(row[dateHeader2]);
+      const d  = new Date(dk);
+      if (fromDate && d < fromDate) return false;
+      if (toDate   && d > toDate)   return false;
+    }
+    if (landing && String(row[landingHeader] || '').trim() !== landing) return false;
+    if (status  && String(row[statusHeader2] || '').trim() !== status)  return false;
+    return true;
+  });
+  document.getElementById('dash-filter-count').textContent = `${filtered.length} of ${rawData.length} rows`;
+  showFilteredTable(rawHeaders, filtered);
+}
+
+function clearDashFilters() {
+  document.getElementById('dash-date-from').value = '';
+  document.getElementById('dash-date-to').value = '';
+  document.getElementById('dash-landing').value = '';
+  document.getElementById('dash-status').value = '';
+  document.getElementById('dash-filter-count').textContent = '';
+  showFilteredTable(rawHeaders, rawData);
+}
+
+function showFilteredTable(headers, rows) {
+  document.getElementById('row-count').textContent = `${rows.length} rows × ${headers.length} cols`;
+  const wrap = document.getElementById('raw-table');
+  if (!rows.length) { wrap.innerHTML = '<p style="padding:16px;color:#475569">No matching rows</p>'; return; }
+  const thead = `<thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${rows.slice(0, 500).map(r => `<tr>${headers.map(h => `<td>${r[h] ?? ''}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  wrap.innerHTML = `<table>${thead}${tbody}</table>`;
+}
+
+// ── CSV PARSER ──
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  const parse = line => {
+    const result = []; let cur = '', q = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { if (q && line[i+1] === '"') { cur += '"'; i++; } else q = !q; }
+      else if (c === ',' && !q) { result.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    result.push(cur.trim()); return result;
+  };
+  const headers = parse(lines[0]);
+  const rows = lines.slice(1).map(line => {
+    const vals = parse(line); const obj = {};
+    headers.forEach((h, i) => obj[h] = vals[i] ?? '');
+    return obj;
+  });
+  return { headers, rows };
+}
+
+// ── COLUMN LETTER → INDEX ──
+function colLetterToIndex(letters) {
+  let n = 0;
+  for (let i = 0; i < letters.length; i++) n = n * 26 + (letters.toUpperCase().charCodeAt(i) - 64);
+  return n - 1;
+}
+
+// ── DATETIME COMBINER ──
+function parseDateTime(dateVal, timeVal) {
+  const dk = normalizeDate(dateVal);
+  const ts = String(timeVal || '').trim();
+  if (dk === 'Unknown') return null;
+  const dt = new Date(`${dk}T${ts}`);
+  if (!isNaN(dt.getTime())) return dt;
+  const d = new Date(dk + 'T00:00:00');
+  return isNaN(d.getTime()) ? null : d;
+}
+
+// ── TIME PARSER → hours ──
+function parseTimeToHours(val) {
+  if (!val && val !== 0) return NaN;
+  const s = String(val).trim();
+  if (/^\d+:\d{2}(:\d{2})?$/.test(s)) {
+    const p = s.split(':').map(Number);
+    return p[0] + p[1] / 60 + (p[2] || 0) / 3600;
+  }
+  const n = parseFloat(s);
+  return isNaN(n) ? NaN : n;
+}
+
+// ── DATE NORMALIZER ──
+function normalizeDate(val) {
+  if (!val) return 'Unknown';
+  const s = String(val).trim();
+  const dmyMatch = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const mon = dmyMatch[2].padStart(2, '0');
+    const yr  = dmyMatch[3].length === 2 ? '20' + dmyMatch[3] : dmyMatch[3];
+    const d2  = new Date(`${yr}-${mon}-${day}`);
+    if (!isNaN(d2.getTime())) return d2.toISOString().slice(0, 10);
+  }
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  }
+  if (/^\d{5}$/.test(s)) {
+    const d = new Date((parseInt(s) - 25569) * 86400 * 1000);
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+  }
+  return s;
+}
+
+function fmtDate(dateKey) {
+  if (dateKey === 'Unknown') return dateKey;
+  const d = new Date(dateKey + 'T00:00:00');
+  if (isNaN(d.getTime())) return dateKey;
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+// ── PERCENTILE ──
+function percentile(sorted, p) {
+  if (!sorted.length) return NaN;
+  const idx = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+// ── GENERATE REPORT ──
+function generateReport() {
+  if (!rawData.length) {
+    document.getElementById('report-output').innerHTML = `<div class="no-data-msg"><h3>No data loaded</h3><p>Go to Dashboard tab and connect a Google Sheet first.</p></div>`;
+    return;
+  }
+  const dateIdx   = colLetterToIndex(COL_DATE);
+  const statusIdx = colLetterToIndex(COL_STATUS);
+  const timeIdx   = colLetterToIndex(COL_TIME);
+  const timeCIdx  = colLetterToIndex('C');
+  const dateHeader   = rawHeaders[dateIdx];
+  const statusHeader = rawHeaders[statusIdx];
+  const timeHeader   = rawHeaders[timeIdx];
+  const timeCHeader  = rawHeaders[timeCIdx];
+  if (!dateHeader || !statusHeader || !timeHeader) {
+    document.getElementById('report-output').innerHTML = `<div class="no-data-msg"><h3>Column not found</h3><p>Date(B)=${dateHeader||'missing'} | Status(CG)=${statusHeader||'missing'} | Time(T)=${timeHeader||'missing'}</p></div>`;
+    return;
+  }
+  const uniqueStatuses = [...new Set(rawData.map(r => String(r[statusHeader] || '').trim()))].filter(Boolean).slice(0, 20);
+  const rocDetected = uniqueStatuses.find(v => v.toLowerCase().includes('resolve') || v.toLowerCase().includes('roc')) || 'Resolve on Call';
+  const compDetected = uniqueStatuses.find(v => v.toLowerCase().includes('complet')) || 'Completed';
+  const fromVal = document.getElementById('filter-from').value;
+  const toVal   = document.getElementById('filter-to').value;
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate   = toVal   ? new Date(toVal)   : null;
+  const groups = {};
+  rawData.forEach(row => {
+    const dk = normalizeDate(row[dateHeader]);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return; // skip non-date values
+    if (fromDate || toDate) {
+      const d = new Date(dk);
+      if (fromDate && d < fromDate) return;
+      if (toDate   && d > toDate)   return;
+    }
+    if (!groups[dk]) groups[dk] = [];
+    groups[dk].push(row);
+  });
+  const report = [];
+  for (const [dateKey, rows] of Object.entries(groups)) {
+    const total = rows.length;
+    const resolveOnCall = rows.filter(r =>
+      String(r[statusHeader] || '').toLowerCase().includes(rocDetected.toLowerCase().slice(0, 6))
+    ).length;
+    const within4h = rows.filter(r => {
+      const t = parseTimeToHours(r[timeHeader]);
+      const isCompleted = String(r[statusHeader] || '').toLowerCase().includes(compDetected.toLowerCase().slice(0, 6));
+      return isCompleted && !isNaN(t) && t <= 4;
+    }).length;
+    const completedTimes = rows
+      .filter(r => String(r[statusHeader] || '').toLowerCase().includes(compDetected.toLowerCase().slice(0, 6)))
+      .map(r => parseTimeToHours(r[timeHeader]))
+      .filter(v => !isNaN(v))
+      .sort((a, b) => a - b);
+    const p50 = percentile(completedTimes, 50);
+    const p90 = percentile(completedTimes, 90);
+    const ticketsCreated = total - resolveOnCall;
+    const l2Tickets = ticketsCreated - resolveOnCall;
+    const now = new Date();
+    const openRows = rows.filter(r => String(r[statusHeader] || '').toLowerCase().includes('open'));
+    const pending4h = openRows.filter(r => {
+      const dt = parseDateTime(r[dateHeader], r[timeCHeader]);
+      if (!dt) return false;
+      return (now - dt) / 3600000 > 4;
+    }).length;
+    const pending48h = openRows.filter(r => {
+      const dt = parseDateTime(r[dateHeader], r[timeCHeader]);
+      if (!dt) return false;
+      return (now - dt) / 3600000 > 48;
+    }).length;
+    report.push({ dateKey, dateDisplay: fmtDate(dateKey), total, resolveOnCall, ticketsCreated, l2Tickets, within4h, p50, p90, pending4h, pending48h });
+  }
+  report.sort((a, b) => {
+    const da = new Date(a.dateKey), db = new Date(b.dateKey);
+    return isNaN(da) ? 1 : isNaN(db) ? -1 : da - db;
+  });
+  const sumTotal    = report.reduce((s, r) => s + r.total, 0);
+  const sumROC      = report.reduce((s, r) => s + r.resolveOnCall, 0);
+  const sumTickets  = sumTotal - sumROC;
+  const sumL2       = sumTickets - sumROC;
+  const sumW4       = report.reduce((s, r) => s + r.within4h, 0);
+  const sumP4h      = report.reduce((s, r) => s + r.pending4h, 0);
+  const sumP48h     = report.reduce((s, r) => s + r.pending48h, 0);
+  const allP50s  = report.filter(r => !isNaN(r.p50)).map(r => r.p50).sort((a,b)=>a-b);
+  const allP90s  = report.filter(r => !isNaN(r.p90)).map(r => r.p90).sort((a,b)=>a-b);
+  const overallP50 = percentile(allP50s, 50);
+  const overallP90 = percentile(allP90s, 90);
+  const fmtH = v => isNaN(v) ? '—' : v.toFixed(2) + 'h';
+  const pct  = (a, b) => b ? ((a/b)*100).toFixed(1) + '%' : '—';
+  const labels = report.map(r => r.dateDisplay);
+  document.getElementById('report-output').innerHTML = `
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:#64748b;display:flex;gap:24px;flex-wrap:wrap;">
+      <span>📅 <b style="color:#94a3b8">Date col (B):</b> "${dateHeader}"</span>
+      <span>📋 <b style="color:#94a3b8">Status col (CG):</b> "${statusHeader}"</span>
+      <span>⏱ <b style="color:#94a3b8">Time col (T):</b> "${timeHeader}"</span>
+      <span>✅ <b style="color:#94a3b8">ROC keyword:</b> "${rocDetected}"</span>
+      <span>🏁 <b style="color:#94a3b8">Completed keyword:</b> "${compDetected}"</span>
+      <span>📊 <b style="color:#94a3b8">CG unique values:</b> ${uniqueStatuses.map(v=>`<span style="background:#1e293b;border:1px solid #334155;border-radius:4px;padding:1px 6px;color:#cbd5e1">${v}</span>`).join(' ')}</span>
+    </div>
+    <div class="report-summary">
+      <div class="summary-card"><div class="s-label">Total Ticket Created</div><div class="s-value">${sumTotal.toLocaleString()}</div><div class="s-sub">Across ${report.length} dates</div></div>
+      <div class="summary-card"><div class="s-label">L2 Ticket</div><div class="s-value">${sumTickets.toLocaleString()}</div><div class="s-sub">Total − Resolve on Call</div></div>
+      <div class="summary-card green"><div class="s-label">Resolve on Call</div><div class="s-value">${sumROC.toLocaleString()}</div><div class="s-sub">${pct(sumROC, sumTotal)} of total</div></div>
+      <div class="summary-card blue"><div class="s-label">Resolved within 4 hrs</div><div class="s-value">${sumW4.toLocaleString()}</div><div class="s-sub">${pct(sumW4, sumTotal)} of total</div></div>
+      <div class="summary-card yellow"><div class="s-label">Overall P50</div><div class="s-value">${fmtH(overallP50)}</div><div class="s-sub">Completed tickets only</div></div>
+      <div class="summary-card yellow"><div class="s-label">Overall P90</div><div class="s-value">${fmtH(overallP90)}</div><div class="s-sub">Completed tickets only</div></div>
+    </div>
+    <div class="report-charts">
+      <div class="report-chart-panel">
+        <div class="panel-header"><h3>L2 Ticket vs Resolve on Call vs Within 4h</h3></div>
+        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-1"></canvas></div></div>
+      </div>
+      <div class="report-chart-panel">
+        <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3></div>
+        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-2"></canvas></div></div>
+      </div>
+    </div>
+    <div class="report-table-panel">
+      <div class="panel-header">
+        <h3>Date-wise Breakdown</h3>
+        <span style="font-size:12px;color:#64748b">${report.length} dates &nbsp;|&nbsp; ${sumTotal} tickets</span>
+      </div>
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th style="min-width:180px">Metric</th>
+              ${report.map(r => `<th style="text-align:right">${r.dateDisplay}</th>`).join('')}
+              <th style="text-align:right" class="td-total">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="td-date">Total Ticket Created</td>${report.map(r => `<td class="td-num">${r.total}</td>`).join('')}<td class="td-num td-total">${sumTotal}</td></tr>
+            <tr><td class="td-date">Resolve on Call</td>${report.map(r => `<td class="td-green">${r.resolveOnCall}</td>`).join('')}<td class="td-green td-total">${sumROC}</td></tr>
+            <tr><td class="td-date">L2 Ticket</td>${report.map(r => `<td class="td-num">${r.ticketsCreated}</td>`).join('')}<td class="td-num td-total">${sumTickets}</td></tr>
+            <tr><td class="td-date">Within 4 hrs</td>${report.map(r => `<td class="td-blue">${r.within4h}</td>`).join('')}<td class="td-blue td-total">${sumW4}</td></tr>
+            <tr><td class="td-date">W4h %</td>${report.map(r => `<td class="td-blue">${pct(r.within4h, r.ticketsCreated)}</td>`).join('')}<td class="td-blue td-total">${pct(sumW4,sumTickets)}</td></tr>
+            <tr><td class="td-date">P50 (hrs)</td>${report.map(r => `<td class="td-yellow">${fmtH(r.p50)}</td>`).join('')}<td class="td-yellow td-total">${fmtH(overallP50)}</td></tr>
+            <tr><td class="td-date">P90 (hrs)</td>${report.map(r => `<td class="td-yellow">${fmtH(r.p90)}</td>`).join('')}<td class="td-yellow td-total">${fmtH(overallP90)}</td></tr>
+            <tr><td class="td-date">Ticket Pending &gt; 4 Hours</td>${report.map(r => `<td style="text-align:right;color:#fb923c">${r.pending4h}</td>`).join('')}<td style="text-align:right;color:#fb923c;background:#1a2744;font-weight:700">${sumP4h}</td></tr>
+            <tr><td class="td-date">Ticket Pending &gt; 48 Hours</td>${report.map(r => `<td style="text-align:right;color:#f87171">${r.pending48h}</td>`).join('')}<td style="text-align:right;color:#f87171;background:#1a2744;font-weight:700">${sumP48h}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  if (reportChart1) reportChart1.destroy();
+  reportChart1 = new Chart(document.getElementById('report-chart-1').getContext('2d'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'L2 Ticket', data: report.map(r=>r.total), backgroundColor: 'rgba(99,102,241,0.7)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 3 },
+      { label: 'Resolve on Call', data: report.map(r=>r.resolveOnCall), backgroundColor: 'rgba(34,197,94,0.7)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 3 },
+      { label: 'Within 4 hrs',   data: report.map(r=>r.within4h), backgroundColor: 'rgba(129,140,248,0.7)', borderColor: '#818cf8', borderWidth: 1, borderRadius: 3 },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
+  });
+  if (reportChart2) reportChart2.destroy();
+  reportChart2 = new Chart(document.getElementById('report-chart-2').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'P50 (hrs)', data: report.map(r=>isNaN(r.p50)?null:+r.p50.toFixed(2)), borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', borderWidth: 2, pointRadius: 4, tension: 0.3, spanGaps: true },
+      { label: 'P90 (hrs)', data: report.map(r=>isNaN(r.p90)?null:+r.p90.toFixed(2)), borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.1)', borderWidth: 2, pointRadius: 4, tension: 0.3, spanGaps: true },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
+  });
+}
+
+// ── AUTO-REFRESH ──
+document.getElementById('auto-refresh-toggle').addEventListener('change', e => e.target.checked ? startAutoRefresh() : stopAutoRefresh());
+document.getElementById('refresh-interval').addEventListener('change', () => { if (document.getElementById('auto-refresh-toggle').checked) { stopAutoRefresh(); startAutoRefresh(); } });
+function startAutoRefresh() {
+  const interval = parseInt(document.getElementById('refresh-interval').value, 10);
+  countdownValue = interval; document.getElementById('countdown-badge').style.display = 'inline-block';
+  countdownTimer = setInterval(() => {
+    countdownValue--; document.getElementById('countdown').textContent = countdownValue;
+    if (countdownValue <= 0) { countdownValue = interval; if (currentSheetUrl) loadSheet(currentSheetUrl); }
+  }, 1000);
+}
+function stopAutoRefresh() { clearInterval(countdownTimer); document.getElementById('countdown-badge').style.display = 'none'; }
+
+// ═══════════════════════════
+// ANALYSIS TAB — uses google.script.run
+// ═══════════════════════════
+let analysisRunning = false;
+
+// Wrap google.script.run in a Promise
+function callAnalyzeText(text, apiKey) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(err => reject(new Error(err.message || String(err))))
+      .analyzeText(text, apiKey);
+  });
+}
+
+async function runAnalysis() {
+  if (!rawData.length) {
+    document.getElementById('ana-output').innerHTML = `<div class="no-data-msg"><h3>No data</h3><p>Connect a Google Sheet from Dashboard tab first.</p></div>`;
+    return;
+  }
+  const apiKey   = document.getElementById('ana-api-key').value.trim();
+  const lfValue  = document.getElementById('ana-lf-value').value.trim().toLowerCase();
+  const qCol     = document.getElementById('ana-q-col').value.trim().toUpperCase();
+  const phoneCol = document.getElementById('ana-phone-col').value.trim().toUpperCase();
+  if (!apiKey) { alert('Anthropic API key enter करें'); return; }
+  const lfIdx    = colLetterToIndex('K');
+  const qIdx     = colLetterToIndex(qCol);
+  const phoneIdx = colLetterToIndex(phoneCol);
+  const lfHeader    = rawHeaders[lfIdx];
+  const qHeader     = rawHeaders[qIdx];
+  const phoneHeader = rawHeaders[phoneIdx];
+  const filtered = rawData.filter(r =>
+    String(r[lfHeader] || '').toLowerCase().includes(lfValue) &&
+    String(r[qHeader] || '').trim()
+  );
+  if (!filtered.length) {
+    document.getElementById('ana-output').innerHTML = `<div class="no-data-msg"><h3>कोई row नहीं मिली</h3><p>Landing Folder (Col K) में "${lfValue}" नहीं मिला या Question column खाली है।</p></div>`;
+    return;
+  }
+  analysisRunning = true;
+  document.getElementById('stop-btn').style.display = 'inline-block';
+  document.getElementById('ana-progress').style.display = 'block';
+  document.getElementById('ana-output').innerHTML = '';
+  const results = [];
+  for (let i = 0; i < filtered.length; i++) {
+    if (!analysisRunning) break;
+    const row = filtered[i];
+    const phone    = String(row[phoneHeader] || '—').trim();
+    const question = String(row[qHeader] || '').trim();
+    const pct = Math.round(((i + 1) / filtered.length) * 100);
+    document.getElementById('ana-progress-text').textContent = `Processing ${i + 1} of ${filtered.length}...`;
+    document.getElementById('ana-progress-bar').style.width = pct + '%';
+    let verbatim = '—';
+    try {
+      verbatim = await callAnalyzeText(question, apiKey);
+    } catch (e) {
+      verbatim = 'Error: ' + e.message;
+    }
+    results.push({ phone, question, verbatim });
+    renderAnalysisResults(results, filtered.length);
+    if (i < filtered.length - 1) await new Promise(r => setTimeout(r, 300));
+  }
+  analysisRunning = false;
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('ana-progress').style.display = 'none';
+}
+
+function stopAnalysis() {
+  analysisRunning = false;
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('ana-progress').style.display = 'none';
+}
+
+function renderAnalysisResults(results, total) {
+  document.getElementById('ana-output').innerHTML = `
+    <div style="margin-bottom:12px;font-size:13px;color:#64748b;">${results.length} of ${total} processed</div>
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;">
+      <div style="overflow-x:auto;max-height:600px;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr>
+              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;white-space:nowrap;width:140px;">Phone</th>
+              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;">Question by Partner</th>
+              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#6366f1;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;">AI Verbatim</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${results.map(r => `
+              <tr style="border-bottom:1px solid #0f172a;">
+                <td style="padding:12px 16px;color:#22c55e;font-weight:600;white-space:nowrap;">${r.phone}</td>
+                <td style="padding:12px 16px;color:#94a3b8;max-width:300px;">${r.question}</td>
+                <td style="padding:12px 16px;color:#e2e8f0;max-width:400px;">${r.verbatim}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════
+// AGENT WISE REPORT
+// ═══════════════════════════
+function generateAgentReport() {
+  if (!rawData.length) {
+    document.getElementById('agent-report-output').innerHTML = `<div class="no-data-msg"><h3>No data</h3><p>Dashboard tab से Google Sheet connect करें।</p></div>`;
+    return;
+  }
+  const agentIdx   = colLetterToIndex('D');
+  const dateIdx2   = colLetterToIndex('B');
+  const statusIdx2 = colLetterToIndex('CG');
+  const agentHeader   = rawHeaders[agentIdx];
+  const dateHeader2   = rawHeaders[dateIdx2];
+  const statusHeader2 = rawHeaders[statusIdx2];
+  if (!agentHeader) { document.getElementById('agent-report-output').innerHTML = `<div class="no-data-msg"><h3>Column D not found</h3></div>`; return; }
+  const fromVal = document.getElementById('agent-date-from').value;
+  const toVal   = document.getElementById('agent-date-to').value;
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate   = toVal   ? new Date(toVal)   : null;
+  const allStatuses = [...new Set(rawData.map(r => String(r[statusHeader2] || '').trim()))].filter(Boolean);
+  const rocKw  = allStatuses.find(v => v.toLowerCase().includes('resolve')) || 'Resolve on Call';
+  const compKw = allStatuses.find(v => v.toLowerCase().includes('complet')) || 'Completed';
+  const openKw = allStatuses.find(v => v.toLowerCase().includes('open')) || 'Open';
+  const filtered = rawData.filter(row => {
+    if (!fromDate && !toDate) return true;
+    const dk = normalizeDate(row[dateHeader2]);
+    const d = new Date(dk);
+    if (fromDate && d < fromDate) return false;
+    if (toDate   && d > toDate)   return false;
+    return true;
+  });
+  const agentMap = {};
+  filtered.forEach(row => {
+    const agent  = String(row[agentHeader] || 'Unknown').trim();
+    if (agent.toLowerCase().includes('chatbot')) return;
+    const dk     = normalizeDate(row[dateHeader2]);
+    const status = String(row[statusHeader2] || '').trim();
+    if (!agentMap[agent]) agentMap[agent] = {};
+    if (!agentMap[agent][dk]) agentMap[agent][dk] = { total: 0, roc: 0, open: 0, completed: 0 };
+    agentMap[agent][dk].total++;
+    if (status.toLowerCase().includes(rocKw.toLowerCase().slice(0,6)))  agentMap[agent][dk].roc++;
+    if (status.toLowerCase().includes(openKw.toLowerCase().slice(0,4))) agentMap[agent][dk].open++;
+    if (status.toLowerCase().includes(compKw.toLowerCase().slice(0,6))) agentMap[agent][dk].completed++;
+  });
+  const agents = Object.keys(agentMap).sort();
+  const agentTotals = {};
+  agents.forEach(a => {
+    agentTotals[a] = { total: 0, roc: 0, open: 0, completed: 0 };
+    Object.values(agentMap[a]).forEach(d => {
+      agentTotals[a].total     += d.total;
+      agentTotals[a].roc       += d.roc;
+      agentTotals[a].open      += d.open;
+      agentTotals[a].completed += d.completed;
+    });
+  });
+  const grandTotal     = agents.reduce((s, a) => s + agentTotals[a].total, 0);
+  const grandRoc       = agents.reduce((s, a) => s + agentTotals[a].roc, 0);
+  const grandOpen      = agents.reduce((s, a) => s + agentTotals[a].open, 0);
+  const grandCompleted = agents.reduce((s, a) => s + agentTotals[a].completed, 0);
+  const pct = (a, b) => b ? ((a/b)*100).toFixed(1) + '%' : '—';
+  const metrics = [
+    { label: 'Tickets Created', key: 'total',     cls: 'td-num'   },
+    { label: 'Resolved on Call',key: 'roc',       cls: 'td-green' },
+    { label: 'Open',            key: 'open',       cls: 'td-blue'  },
+    { label: 'Completed',       key: 'completed',  cls: 'td-yellow'},
+  ];
+  document.getElementById('agent-report-output').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin-bottom:24px;">
+      <div class="summary-card"><div class="s-label">Total Agents</div><div class="s-value">${agents.length}</div></div>
+      <div class="summary-card"><div class="s-label">Tickets Created</div><div class="s-value">${grandTotal.toLocaleString()}</div></div>
+      <div class="summary-card green"><div class="s-label">Resolved on Call</div><div class="s-value">${grandRoc}</div><div class="s-sub">${pct(grandRoc,grandTotal)}</div></div>
+      <div class="summary-card blue"><div class="s-label">Open</div><div class="s-value">${grandOpen}</div><div class="s-sub">${pct(grandOpen,grandTotal)}</div></div>
+      <div class="summary-card yellow"><div class="s-label">Completed</div><div class="s-value">${grandCompleted}</div><div class="s-sub">${pct(grandCompleted,grandTotal)}</div></div>
+    </div>
+    <div class="report-table-panel">
+      <div class="panel-header">
+        <h3>Agent-wise Breakdown</h3>
+        <span style="font-size:12px;color:#64748b">${agents.length} agents &nbsp;|&nbsp; ${grandTotal} tickets</span>
+      </div>
+      <div class="report-table-wrap">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th style="min-width:160px;">Agent</th>
+              ${metrics.map(m => `<th style="text-align:right">${m.label}</th>`).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${agents.map(a => `
+              <tr>
+                <td class="td-date">${a}</td>
+                ${metrics.map(m => `<td class="${m.cls}">${agentTotals[a][m.key]}</td>`).join('')}
+              </tr>`).join('')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <td style="font-weight:700;color:#f1f5f9;padding:12px 16px;">Total</td>
+              <td style="text-align:right;font-weight:700;color:#f1f5f9;padding:12px 16px;">${grandTotal}</td>
+              <td style="text-align:right;font-weight:700;color:#22c55e;padding:12px 16px;">${grandRoc}</td>
+              <td style="text-align:right;font-weight:700;color:#818cf8;padding:12px 16px;">${grandOpen}</td>
+              <td style="text-align:right;font-weight:700;color:#fbbf24;padding:12px 16px;">${grandCompleted}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function clearDateFilter() {
+  document.getElementById('filter-from').value = '';
+  document.getElementById('filter-to').value = '';
+  generateReport();
+}
+
+function setStatus(type, msg) {
+  const dot = document.getElementById('status-dot'); dot.className = 'status-dot';
+  if (type === 'green') dot.classList.add('green');
+  else if (type === 'red') dot.classList.add('red');
+  else if (type === 'pulse') dot.classList.add('green', 'pulse');
+  document.getElementById('status-text').textContent = msg;
+}
+</script>
+</body>
+</html>
