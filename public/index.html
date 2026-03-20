@@ -268,12 +268,6 @@
   <div class="tab-panel active" id="tab-dashboard">
 
     <div class="connect-bar">
-      <input type="text" id="sheet-url" placeholder="Paste Google Sheet URL here..." />
-      <button class="btn-primary" id="connect-btn">Connect Sheet</button>
-      <div class="session-history" id="session-history">
-        <div class="session-history-label">Recent Sessions</div>
-        <div id="session-history-list"></div>
-      </div>
       <div class="refresh-controls">
         <label>
           <span>Auto-refresh</span>
@@ -294,7 +288,7 @@
 
     <div id="status-bar">
       <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">No sheet connected. Paste a Google Sheet URL above.</span>
+      <span id="status-text">Loading PTL data...</span>
       <span id="last-updated"></span>
     </div>
 
@@ -450,15 +444,7 @@
 
   <!-- ══════════ INBOUND CALL REPORT TAB ══════════ -->
   <div class="tab-panel" id="tab-inbound">
-    <div class="connect-bar" style="margin-bottom:16px;">
-      <input type="text" id="inbound-sheet-url" placeholder="Paste Inbound Call Sheet URL here..." />
-      <button class="btn-primary" id="inbound-connect-btn">Connect Sheet</button>
-      <span id="inbound-status" style="font-size:13px;color:#64748b;margin-left:8px;"></span>
-      <div class="session-history" id="inbound-session-history">
-        <div class="session-history-label">Recent Sessions</div>
-        <div id="inbound-session-history-list"></div>
-      </div>
-    </div>
+    <span id="inbound-status" style="font-size:13px;color:#64748b;display:block;margin-bottom:12px;"></span>
 
     <!-- Sub-nav (shown after data loads) -->
     <div id="inbound-sub-nav" style="display:none;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:12px;">
@@ -524,6 +510,7 @@ function switchTab(name) {
   document.getElementById('tab-' + name).classList.add('active');
   const idx = { dashboard: 0, inbound: 1 }[name] ?? 0;
   document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  if (name === 'inbound' && !inboundData.length) loadInboundSheet();
 }
 
 function switchSubTab(name) {
@@ -590,62 +577,22 @@ function renderInboundHistory() {
   ).join('');
 }
 function selectDashSession(url) {
-  document.getElementById('sheet-url').value = url;
-  currentSheetUrl = url;
-  localStorage.setItem('sheetUrl', url);
-  addToHistory('sheetUrl', url);
-  renderDashHistory();
-  loadSheet(url);
+  loadSheet();
 }
 function selectInboundSession(url) {
-  document.getElementById('inbound-sheet-url').value = url;
-  localStorage.setItem('inboundSheetUrl', url);
-  addToHistory('inboundSheetUrl', url);
-  renderInboundHistory();
-  loadInboundSheet(url);
+  loadInboundSheet();
 }
 
-// Migrate existing saved URL into history (one-time)
-['sheetUrl', 'inboundSheetUrl'].forEach(key => {
-  const url = localStorage.getItem(key);
-  if (url && !localStorage.getItem(key + '_history')) addToHistory(key, url);
-});
-
-// ── SHEET CONNECT ──
-const savedUrl = localStorage.getItem('sheetUrl');
-if (savedUrl) { document.getElementById('sheet-url').value = savedUrl; loadSheet(savedUrl); }
-renderDashHistory();
-
-document.getElementById('connect-btn').addEventListener('click', () => {
-  const url = document.getElementById('sheet-url').value.trim();
-  if (!url) return setStatus('red', 'Please enter a Google Sheet URL');
-  currentSheetUrl = url;
-  localStorage.setItem('sheetUrl', url);
-  addToHistory('sheetUrl', url);
-  renderDashHistory();
-  loadSheet(url);
-});
-document.getElementById('sheet-url').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('connect-btn').click(); });
-
-function sheetUrlToCsv(url) {
-  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  if (!m) return null;
-  const gm = url.match(/[#&?]gid=(\d+)/);
-  return `https://docs.google.com/spreadsheets/d/${m[1]}/export?format=csv&gid=${gm ? gm[1] : '0'}`;
-}
-
-async function loadSheet(url) {
+// ── SHEET AUTO-LOAD ──
+async function loadSheet() {
   if (isLoading) return;
-  isLoading = true; currentSheetUrl = url;
-  const csvUrl = sheetUrlToCsv(url);
-  if (!csvUrl) { setStatus('red', 'Invalid Google Sheet URL'); isLoading = false; return; }
+  isLoading = true;
   setStatus('pulse', 'Fetching data...');
   try {
-    // Fetch directly from browser (Google Sheets supports CORS for public sheets)
-    const res = await fetch(csvUrl);
-    if (!res.ok) throw new Error(`HTTP ${res.status} — make sure sheet is shared publicly`);
+    const res = await fetch('/api/ptl-data');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    if (!text.trim() || text.trim().startsWith('<')) throw new Error('Could not read sheet — set sharing to "Anyone with the link can view"');
+    if (!text.trim() || text.trim().startsWith('<')) throw new Error('Could not read sheet data');
     const { headers, rows } = parseCsv(text);
     rawHeaders = headers; rawData = rows;
     renderRawTable(headers, rows);
@@ -654,6 +601,8 @@ async function loadSheet(url) {
   } catch (err) { setStatus('red', `Error: ${err.message}`); }
   isLoading = false;
 }
+
+loadSheet();
 
 function renderRawTable(headers, rows) {
   document.getElementById('empty-state').style.display = 'none';
@@ -1149,7 +1098,7 @@ function startAutoRefresh() {
   countdownValue = interval; document.getElementById('countdown-badge').style.display = 'inline-block';
   countdownTimer = setInterval(() => {
     countdownValue--; document.getElementById('countdown').textContent = countdownValue;
-    if (countdownValue <= 0) { countdownValue = interval; if (currentSheetUrl) loadSheet(currentSheetUrl); }
+    if (countdownValue <= 0) { countdownValue = interval; loadSheet(); }
   }, 1000);
 }
 function stopAutoRefresh() { clearInterval(countdownTimer); document.getElementById('countdown-badge').style.display = 'none'; }
@@ -1429,26 +1378,11 @@ function switchInboundSubTab(name) {
   document.getElementById('isnbtn-' + name).classList.add('sn-active');
 }
 
-const savedInboundUrl = localStorage.getItem('inboundSheetUrl');
-if (savedInboundUrl) { document.getElementById('inbound-sheet-url').value = savedInboundUrl; loadInboundSheet(savedInboundUrl); }
-renderInboundHistory();
-
-document.getElementById('inbound-connect-btn').addEventListener('click', () => {
-  const url = document.getElementById('inbound-sheet-url').value.trim();
-  if (!url) return;
-  localStorage.setItem('inboundSheetUrl', url);
-  addToHistory('inboundSheetUrl', url);
-  renderInboundHistory();
-  loadInboundSheet(url);
-});
-
-async function loadInboundSheet(url) {
+async function loadInboundSheet() {
   const statusEl = document.getElementById('inbound-status');
   statusEl.textContent = 'Loading...';
-  const csvUrl = sheetUrlToCsv(url);
-  if (!csvUrl) { statusEl.textContent = 'Invalid URL'; return; }
   try {
-    const res = await fetch(csvUrl);
+    const res = await fetch('/api/inbound-data');
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
     if (!text.trim() || text.trim().startsWith('<')) throw new Error('Sheet not publicly accessible');
@@ -1950,7 +1884,19 @@ async function sendReportToSlack(opts = {}) {
     const w4 = rows.filter(r => { const t=parseTimeToHours(r[timeHeader]); const c=String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)); return c && !isNaN(t) && t<=4; }).length;
     const p50 = percentile(compTimes, 50);
     const p90 = percentile(compTimes, 90);
-    reportRows.push({ dk, total, roc, tickets, w4, p50, p90 });
+    const now = new Date();
+    const openRows = rows.filter(r => String(r[statusHeader]||'').toLowerCase().includes('open'));
+    const pending4h = openRows.filter(r => {
+      const d = normalizeDate(r[dateHeader]); const t = r[timeHeader];
+      if (!d || !t) return false;
+      return (now - new Date(`${d}T${t}`))/3600000 > 4;
+    }).length;
+    const pending48h = openRows.filter(r => {
+      const d = normalizeDate(r[dateHeader]); const t = r[timeHeader];
+      if (!d || !t) return false;
+      return (now - new Date(`${d}T${t}`))/3600000 > 48;
+    }).length;
+    reportRows.push({ dk, total, roc, tickets, w4, p50, p90, pending4h, pending48h });
   }
   reportRows.sort((a,b) => new Date(a.dk) - new Date(b.dk));
 
@@ -1965,6 +1911,8 @@ async function sendReportToSlack(opts = {}) {
   const mtdROC     = reportRows.reduce((s,r)=>s+r.roc,0);
   const mtdTickets = reportRows.reduce((s,r)=>s+r.tickets,0);
   const mtdW4      = reportRows.reduce((s,r)=>s+r.w4,0);
+  const mtdP4h     = reportRows.reduce((s,r)=>s+r.pending4h,0);
+  const mtdP48h    = reportRows.reduce((s,r)=>s+r.pending48h,0);
   const mtdAllTimes = Object.values(groups).flatMap(rows =>
     rows.filter(r=>String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
         .map(r=>parseTimeToHours(r[timeHeader])).filter(v=>!isNaN(v))

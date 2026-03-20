@@ -76,6 +76,13 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+// Hardcoded sheet URLs
+const PTL_CSV     = 'https://docs.google.com/spreadsheets/d/1lbb8ZJn0az-ueBguxwkFQ6d6pvgADGHTEWmMmy7uPSI/export?format=csv';
+const INBOUND_CSV = 'https://docs.google.com/spreadsheets/d/1lbb8ZJn0az-ueBguxwkFQ6d6pvgADGHTEWmMmy7uPSI/export?format=csv&gid=1325902355';
+
+app.get('/api/ptl-data',     (req, res) => fetchCsv(PTL_CSV,     [], 5, res));
+app.get('/api/inbound-data', (req, res) => fetchCsv(INBOUND_CSV, [], 5, res));
+
 // Slack — list channels
 app.get('/api/slack-channels', async (req, res) => {
   const token = req.query.token;
