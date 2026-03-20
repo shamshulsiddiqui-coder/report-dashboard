@@ -44,6 +44,50 @@
     body.light .report-table th[style*="background:#1a2744"] { background: #fde68a !important; color: #92400e !important; }
     body.light #theme-toggle { border-color: #d97706; color: #92400e; }
 
+    /* ── LIGHT: Global inline color overrides ── */
+    body.light [style*="color:#e2e8f0"] { color: #1c1917 !important; }
+    body.light [style*="color:#f1f5f9"] { color: #1c1917 !important; }
+    body.light [style*="color:#f8fafc"] { color: #1c1917 !important; }
+    body.light [style*="color:#cbd5e1"] { color: #374151 !important; }
+    body.light [style*="color:#94a3b8"] { color: #6b7280 !important; }
+    body.light [style*="color:#64748b"] { color: #78350f !important; }
+    body.light [style*="color:#475569"] { color: #57534e !important; }
+    body.light [style*="color:#334155"] { color: #44403c !important; }
+
+    /* ── LIGHT: Global inline background overrides ── */
+    body.light [style*="background:#1e293b"] { background: #fff8e1 !important; border-color: #fcd34d !important; }
+    body.light [style*="background:#0f172a"] { background: #fffbeb !important; }
+    body.light [style*="background:#1a2744"] { background: #fde68a !important; }
+    body.light [style*="background:#1a1400"] { background: #fffbeb !important; }
+
+    /* ── LIGHT: Global inline border overrides ── */
+    body.light [style*="border:1px solid #334155"] { border-color: #fcd34d !important; }
+    body.light [style*="border-color:#334155"]     { border-color: #fcd34d !important; }
+    body.light [style*="border-bottom:1px solid #1e293b"] { border-color: #fcd34d !important; }
+    body.light [style*="border-top:2px solid #334155"]    { border-color: #f59e0b !important; }
+
+    /* ── LIGHT: Inputs & selects ── */
+    body.light input[style*="background:#0f172a"],
+    body.light select[style*="background:#0f172a"] { background: #fffbeb !important; border-color: #fcd34d !important; color: #1c1917 !important; }
+    body.light input[style*="background:#1e293b"]  { background: #fff8e1 !important; border-color: #fcd34d !important; color: #1c1917 !important; }
+
+    /* ── LIGHT: Table total column ── */
+    body.light td[style*="background:#1a2744"],
+    body.light th[style*="background:#1a2744"] { background: #fde68a !important; color: #92400e !important; }
+    body.light td[style*="background:#1e293b"] { background: #fff8e1 !important; }
+
+    /* ── LIGHT: Channel picker modal ── */
+    body.light #channel-picker-modal > div        { background: #fffbeb !important; border-color: #fcd34d !important; }
+    body.light #channel-picker-search             { background: #fff8e1 !important; border-color: #fcd34d !important; color: #1c1917 !important; }
+    body.light #channel-picker-list div           { color: #1c1917 !important; }
+    body.light #channel-picker-list div:hover     { background: #fde68a !important; }
+
+    /* ── LIGHT: Misc ── */
+    body.light .no-data-msg h3  { color: #92400e !important; }
+    body.light .no-data-msg p   { color: #78350f !important; }
+    body.light .report-top h2   { color: #92400e; }
+    body.light h2[style]        { color: #92400e !important; }
+
     header {
       background: #1a1400; border-bottom: 2px solid #f59e0b;
       padding: 12px 28px; display: flex; align-items: center; gap: 20px;
@@ -311,11 +355,13 @@
       <div class="report-top" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <h2>PTL Management Report</h2>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <input type="password" id="slack-token" placeholder="Slack Bot Token (xoxb-...)" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;width:260px;" />
-          <input type="text" id="slack-channel" placeholder="Channel name" value="claude-test-purpose" style="padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;width:160px;" />
-          <button onclick="sendReportToSlack()" style="padding:10px 22px;background:#4A154B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+          <button id="btn-send-ptl" onclick="sendToTrustLineTeam()" style="padding:10px 22px;background:#4A154B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
-            Send to Slack
+            Send PTL Report
+          </button>
+          <button id="btn-send-inbound" onclick="sendInboundToTrustLine()" style="padding:10px 22px;background:#0f7b6c;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
+            Send Inbound Report
           </button>
         </div>
       </div>
@@ -887,7 +933,7 @@ function generateReport() {
   // Sort by date
   report.sort((a, b) => {
     const da = new Date(a.dateKey), db = new Date(b.dateKey);
-    return isNaN(da) ? 1 : isNaN(db) ? -1 : da - db;
+    return isNaN(da) ? 1 : isNaN(db) ? -1 : db - da;
   });
 
   // Totals
@@ -984,8 +1030,8 @@ function generateReport() {
           <thead>
             <tr>
               <th style="min-width:180px;position:sticky;left:0;z-index:3;background:#0f172a;">Metric</th>
-              ${report.map(r => `<th style="text-align:right">${r.dateDisplay}</th>`).join('')}
               <th style="text-align:right" class="td-total">Total</th>
+              ${report.map(r => `<th style="text-align:right">${r.dateDisplay}</th>`).join('')}
             </tr>
           </thead>
           <tbody>
@@ -1005,64 +1051,64 @@ function generateReport() {
               return `
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
-                  ${report.map(r=>`<td style="text-align:right;color:#fbbf24;">${iRcvd[r.dateKey]||0}</td>`).join('')}
                   <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${gR}</td>
+                  ${report.map(r=>`<td style="text-align:right;color:#fbbf24;">${iRcvd[r.dateKey]||0}</td>`).join('')}
                 </tr>
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#818cf8;">Answered %</td>
-                  ${report.map(r=>`<td style="text-align:right;color:#818cf8;">${p(iAns[r.dateKey]||0,iRcvd[r.dateKey]||0)}</td>`).join('')}
                   <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${p(gA,gR)}</td>
+                  ${report.map(r=>`<td style="text-align:right;color:#818cf8;">${p(iAns[r.dateKey]||0,iRcvd[r.dateKey]||0)}</td>`).join('')}
                 </tr>`;
             })()}
             <tr data-ptlmetric="Total Ticket Created">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Total Ticket Created</td>
+              <td class="td-num td-total">${sumTotal}</td>
               ${report.map(r => `<td class="td-num">${r.total}</td>`).join('')}
-              <td class="td-num" class="td-total">${sumTotal}</td>
             </tr>
             <tr data-ptlmetric="Resolve on Call">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Resolve on Call</td>
+              <td class="td-green td-total">${sumROC}</td>
               ${report.map(r => `<td class="td-green">${r.resolveOnCall}</td>`).join('')}
-              <td class="td-green" class="td-total">${sumROC}</td>
             </tr>
             <tr data-ptlmetric="ROC %">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">ROC %</td>
+              <td class="td-green td-total">${pct(sumROC,sumTotal)}</td>
               ${report.map(r => `<td class="td-green">${pct(r.resolveOnCall, r.total)}</td>`).join('')}
-              <td class="td-green" class="td-total">${pct(sumROC,sumTotal)}</td>
             </tr>
             <tr data-ptlmetric="L2 Ticket">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">L2 Ticket</td>
+              <td class="td-num td-total">${sumTickets}</td>
               ${report.map(r => `<td class="td-num">${r.ticketsCreated}</td>`).join('')}
-              <td class="td-num" class="td-total">${sumTickets}</td>
             </tr>
             <tr data-ptlmetric="Within 4 hrs">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Within 4 hrs</td>
+              <td class="td-blue td-total">${sumW4}</td>
               ${report.map(r => `<td class="td-blue">${r.within4h}</td>`).join('')}
-              <td class="td-blue" class="td-total">${sumW4}</td>
             </tr>
             <tr data-ptlmetric="W4h %">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">W4h %</td>
+              <td class="td-blue td-total">${pct(sumW4,sumTickets)}</td>
               ${report.map(r => `<td class="td-blue">${pct(r.within4h, r.ticketsCreated)}</td>`).join('')}
-              <td class="td-blue" class="td-total">${pct(sumW4,sumTickets)}</td>
             </tr>
             <tr data-ptlmetric="P50 (hrs)">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">P50 (hrs)</td>
+              <td class="td-yellow td-total">${fmtH(overallP50)}</td>
               ${report.map(r => `<td class="td-yellow">${fmtH(r.p50)}</td>`).join('')}
-              <td class="td-yellow" class="td-total">${fmtH(overallP50)}</td>
             </tr>
             <tr data-ptlmetric="P90 (hrs)">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">P90 (hrs)</td>
+              <td class="td-yellow td-total">${fmtH(overallP90)}</td>
               ${report.map(r => `<td class="td-yellow">${fmtH(r.p90)}</td>`).join('')}
-              <td class="td-yellow" class="td-total">${fmtH(overallP90)}</td>
             </tr>
             <tr data-ptlmetric="Ticket Pending > 4 Hours">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Ticket Pending &gt; 4 Hours</td>
-              ${report.map(r => `<td style="text-align:right;color:#fb923c">${r.pending4h}</td>`).join('')}
               <td style="text-align:right;color:#fb923c;background:#1a2744;font-weight:700">${sumP4h}</td>
+              ${report.map(r => `<td style="text-align:right;color:#fb923c">${r.pending4h}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="Ticket Pending > 48 Hours">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Ticket Pending &gt; 48 Hours</td>
-              ${report.map(r => `<td style="text-align:right;color:#f87171">${r.pending48h}</td>`).join('')}
               <td style="text-align:right;color:#f87171;background:#1a2744;font-weight:700">${sumP48h}</td>
+              ${report.map(r => `<td style="text-align:right;color:#f87171">${r.pending48h}</td>`).join('')}
             </tr>
           </tbody>
         </table>
@@ -1516,7 +1562,7 @@ function renderInboundReport() {
     }
   });
 
-  const dates  = [...dateSet].sort();
+  const dates  = [...dateSet].sort().reverse();
   const agents = Object.keys(agentMap).sort();
   const queues = [...queueSet].sort();
 
@@ -1554,40 +1600,40 @@ function renderInboundReport() {
         <thead>
           <tr>
             <th style="min-width:180px;position:sticky;left:0;z-index:3;background:#0f172a;">Metric</th>
-            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
             <th style="text-align:right;background:#1a2744;color:#93c5fd;white-space:nowrap;">Total</th>
+            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
           <tr data-metric="Total Call Initiate">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#e2e8f0;">Total Call Initiate</td>
-            ${dates.map(d=>`<td style="text-align:right;">${dateInitiate[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;background:#1a2744;">${grandInitiate}</td>
+            ${dates.map(d=>`<td style="text-align:right;">${dateInitiate[d]||0}</td>`).join('')}
           </tr>
           <tr data-metric="Call Not Landed in Queue (Working Hours)">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dateNotLandedWork[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${grandNotLandedWork}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dateNotLandedWork[d]||0}</td>`).join('')}
           </tr>
           <tr data-metric="Call Not Landed in Queue (Non-Working Hours)">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fb923c;">Call Not Landed in Queue (Non-Working Hours)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dateNotLandedNonWork[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#fb923c;background:#1a2744;">${grandNotLandedNonWork}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dateNotLandedNonWork[d]||0}</td>`).join('')}
           </tr>
           <tr data-metric="Total Call Received">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fbbf24;">${dateReceived[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${grandReceived}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#fbbf24;">${dateReceived[d]||0}</td>`).join('')}
           </tr>
           <tr data-metric="Total Call Answered">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#22c55e;">Total Call Answered</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dateAnswered[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;">${grandAnswered}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dateAnswered[d]||0}</td>`).join('')}
           </tr>
           <tr data-metric="Answered %">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#818cf8;">Answered %</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dateAnswered[d]||0,dateReceived[d]||0)}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(grandAnswered,grandReceived)}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dateAnswered[d]||0,dateReceived[d]||0)}</td>`).join('')}
           </tr>
         </tbody>
       </table>
@@ -1605,24 +1651,24 @@ function renderInboundReport() {
         <thead>
           <tr>
             <th style="min-width:180px;position:sticky;left:0;z-index:3;background:#0f172a;">Agent Name</th>
-            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
             <th style="text-align:right;background:#1a2744;color:#93c5fd;white-space:nowrap;">Total</th>
+            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
           ${agents.map(a=>`
             <tr data-agent="${a.toLowerCase()}">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">${a}</td>
-              ${dates.map(d=>`<td style="text-align:right;">${agentMap[a][d]||'—'}</td>`).join('')}
               <td style="text-align:right;font-weight:700;color:#93c5fd;background:#1a2744;">${agentTotals[a]}</td>
+              ${dates.map(d=>`<td style="text-align:right;">${agentMap[a][d]||'—'}</td>`).join('')}
             </tr>
           `).join('')}
         </tbody>
         <tfoot>
           <tr style="background:#1a2744;font-weight:700;">
             <td class="td-date" style="position:sticky;left:0;background:#1a2744;">Total Answered</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dateAnswered[d]||0}</td>`).join('')}
             <td style="text-align:right;color:#22c55e;">${grandAnswered}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dateAnswered[d]||0}</td>`).join('')}
           </tr>
         </tfoot>
       </table>
@@ -1635,19 +1681,19 @@ function renderInboundReport() {
         <thead>
           <tr>
             <th style="min-width:180px;position:sticky;left:0;z-index:3;background:#0f172a;">Queue Name</th>
-            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;" colspan="3">${fmtD(d)}</th>`).join('')}
             <th style="text-align:right;background:#1a2744;color:#93c5fd;" colspan="3">Total</th>
+            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;" colspan="3">${fmtD(d)}</th>`).join('')}
           </tr>
           <tr>
             <th style="position:sticky;left:0;z-index:3;background:#0f172a;"></th>
+            <th style="text-align:right;color:#fbbf24;font-size:10px;background:#1a2744;">Received</th>
+            <th style="text-align:right;color:#22c55e;font-size:10px;background:#1a2744;">Answered</th>
+            <th style="text-align:right;color:#818cf8;font-size:10px;background:#1a2744;">Ans%</th>
             ${dates.map(()=>`
               <th style="text-align:right;color:#fbbf24;font-size:10px;">Received</th>
               <th style="text-align:right;color:#22c55e;font-size:10px;">Answered</th>
               <th style="text-align:right;color:#818cf8;font-size:10px;">Ans%</th>
             `).join('')}
-            <th style="text-align:right;color:#fbbf24;font-size:10px;background:#1a2744;">Received</th>
-            <th style="text-align:right;color:#22c55e;font-size:10px;background:#1a2744;">Answered</th>
-            <th style="text-align:right;color:#818cf8;font-size:10px;background:#1a2744;">Ans%</th>
           </tr>
         </thead>
         <tbody>
@@ -1656,28 +1702,28 @@ function renderInboundReport() {
             const qAnswered = dates.reduce((s,d)=>s+(queueMap[q]?.[d]?.answered||0),0);
             return `<tr>
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">${q}</td>
+              <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${qReceived}</td>
+              <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;">${qAnswered}</td>
+              <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(qAnswered,qReceived)}</td>
               ${dates.map(d=>`
                 <td style="text-align:right;color:#fbbf24;">${queueMap[q]?.[d]?.received||'—'}</td>
                 <td style="text-align:right;color:#22c55e;">${queueMap[q]?.[d]?.answered||'—'}</td>
                 <td style="text-align:right;color:#818cf8;">${pct(queueMap[q]?.[d]?.answered||0, queueMap[q]?.[d]?.received||0)}</td>
               `).join('')}
-              <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${qReceived}</td>
-              <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;">${qAnswered}</td>
-              <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(qAnswered,qReceived)}</td>
             </tr>`;
           }).join('')}
         </tbody>
         <tfoot>
           <tr style="background:#1a2744;font-weight:700;">
             <td class="td-date" style="position:sticky;left:0;background:#1a2744;">Grand Total</td>
+            <td style="text-align:right;color:#fbbf24;">${grandReceived}</td>
+            <td style="text-align:right;color:#22c55e;">${grandAnswered}</td>
+            <td style="text-align:right;color:#818cf8;">${pct(grandAnswered,grandReceived)}</td>
             ${dates.map(d=>`
               <td style="text-align:right;color:#fbbf24;">${dateReceived[d]||0}</td>
               <td style="text-align:right;color:#22c55e;">${dateAnswered[d]||0}</td>
               <td style="text-align:right;color:#818cf8;">${pct(dateAnswered[d]||0,dateReceived[d]||0)}</td>
             `).join('')}
-            <td style="text-align:right;color:#fbbf24;">${grandReceived}</td>
-            <td style="text-align:right;color:#22c55e;">${grandAnswered}</td>
-            <td style="text-align:right;color:#818cf8;">${pct(grandAnswered,grandReceived)}</td>
           </tr>
         </tfoot>
       </table>
@@ -1716,7 +1762,7 @@ function buildInboundSummaryHtml() {
       if (disp === 'CONNECTED') dAnswered[dk] = (dAnswered[dk] || 0) + 1;
     }
   });
-  const dates = [...dSet].sort();
+  const dates = [...dSet].sort().reverse();
   const fmtD = dk => { const d=new Date(dk+'T00:00:00'); return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}); };
   const pct  = (a,b) => b ? (a/b*100).toFixed(1)+'%' : '—';
   const gInit  = Object.values(dInit).reduce((s,v)=>s+v,0);
@@ -1731,51 +1777,145 @@ function buildInboundSummaryHtml() {
         <thead>
           <tr>
             <th style="min-width:200px;position:sticky;left:0;z-index:3;background:#0f172a;">Metric</th>
-            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
             <th style="text-align:right;background:#1a2744;color:#93c5fd;">Total</th>
+            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Total Call Initiate</td>
-            ${dates.map(d=>`<td style="text-align:right;">${dInit[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;background:#1a2744;">${gInit}</td>
+            ${dates.map(d=>`<td style="text-align:right;">${dInit[d]||0}</td>`).join('')}
           </tr>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dNotLandedWork[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${gNotLW}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dNotLandedWork[d]||0}</td>`).join('')}
           </tr>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fb923c;">Call Not Landed in Queue (Non-Working Hours)</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dNotLandedNonWork[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#fb923c;background:#1a2744;">${gNotLN}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dNotLandedNonWork[d]||0}</td>`).join('')}
           </tr>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fbbf24;">${dReceived[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${gRcvd}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#fbbf24;">${dReceived[d]||0}</td>`).join('')}
           </tr>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#22c55e;">Total Call Answered</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dAnswered[d]||0}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;">${gAns}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#22c55e;">${dAnswered[d]||0}</td>`).join('')}
           </tr>
           <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#818cf8;">Answered %</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dAnswered[d]||0,dReceived[d]||0)}</td>`).join('')}
             <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(gAns,gRcvd)}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dAnswered[d]||0,dReceived[d]||0)}</td>`).join('')}
           </tr>
         </tbody>
       </table>
     </div>`;
 }
 
-async function sendReportToSlack() {
+function sendToTrustLineTeam() {
+  openChannelPicker(async (channelId, channelName) => {
+    const btn = document.getElementById('btn-send-ptl');
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+    try {
+      await sendReportToSlack({ token: SLACK_BOT_TOKEN, channel: channelId });
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg> Send PTL Report'; }
+    }
+  });
+}
+
+function sendInboundToTrustLine() {
+  if (!inboundData.length) return alert('Load Inbound Call data first.');
+  openChannelPicker(async (channelId, channelName) => {
+    await _doSendInbound(channelId);
+  });
+}
+
+async function _doSendInbound(CHANNEL) {
+  const btn = document.getElementById('btn-send-inbound');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending...'; }
+
+  const TOKEN = SLACK_BOT_TOKEN;
+
+  try {
+    const dtH = inboundHeaders[3], quH = inboundHeaders[6], dpH = inboundHeaders[10];
+    const byDate = {};
+    inboundData.forEach(row => {
+      const raw = String(row[dtH] || '').trim(); if (!raw) return;
+      const dk = normalizeDate(raw.split(' ')[0]); if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
+      if (!byDate[dk]) byDate[dk] = [];
+      byDate[dk].push(row);
+    });
+    const allDates = Object.keys(byDate).sort();
+    if (!allDates.length) return alert('No inbound data found.');
+
+    const latestDate = allDates[allDates.length - 1];
+    const [yr, mo] = latestDate.split('-');
+    const ftdRows = byDate[latestDate];
+    const mtdRows = inboundData.filter(row => {
+      const dk = normalizeDate(String(row[dtH]||'').trim().split(' ')[0]);
+      return dk && dk.startsWith(`${yr}-${mo}`);
+    });
+
+    const calcInb = rows => {
+      let nlW=0, nlN=0, rcvd=0, ans=0;
+      rows.forEach(r => {
+        const qu=String(r[quH]||'').trim(), dp=String(r[dpH]||'').trim().toUpperCase();
+        const raw=String(r[dtH]||'').trim();
+        if (!qu) { const s=getCallTimeSecs(raw); (s!==null&&s>=39600&&s<=75600)?nlW++:nlN++; }
+        else { rcvd++; if(dp==='CONNECTED') ans++; }
+      });
+      const pct = (a,b) => b ? (a/b*100).toFixed(1)+'%' : 'N/A';
+      return { total: rows.length, nlW, nlN, rcvd, ans, ansPct: pct(ans,rcvd) };
+    };
+
+    const ftd = calcInb(ftdRows);
+    const mtd = calcInb(mtdRows);
+    const pad = (v,n) => String(v).padEnd(n);
+    const ftdDisplay = new Date(latestDate).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+
+    const text = [
+      `*:telephone_receiver: Inbound Call Report*`,
+      `*FTD: ${ftdDisplay}* | *MTD: ${mo}/${yr}*`,
+      ``,
+      `\`\`\``,
+      `Metric                           | FTD       | MTD`,
+      `---------------------------------|-----------|----------`,
+      `Total Call Initiate              | ${pad(ftd.total,9)} | ${mtd.total}`,
+      `Not Landed (Working Hrs)         | ${pad(ftd.nlW,9)} | ${mtd.nlW}`,
+      `Not Landed (Non-Working Hrs)     | ${pad(ftd.nlN,9)} | ${mtd.nlN}`,
+      `Total Call Received              | ${pad(ftd.rcvd,9)} | ${mtd.rcvd}`,
+      `Total Call Answered              | ${pad(ftd.ans,9)} | ${mtd.ans}`,
+      `Answered %                       | ${pad(ftd.ansPct,9)} | ${mtd.ansPct}`,
+      `\`\`\``,
+      ``,
+      `_:robot_face: Shamshul's Dashboard | ${new Date().toLocaleString('en-IN')}_`
+    ].join('\n');
+
+    const res = await fetch('/api/slack', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: TOKEN, channel: CHANNEL, text })
+    });
+    const data = await res.json();
+    if (!data.ok) alert('Slack error: ' + data.error);
+  } catch(e) {
+    alert('Error: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg> Send Inbound Report'; }
+  }
+}
+
+async function sendReportToSlack(opts = {}) {
   if (!rawData.length) return alert('Generate the report first.');
 
-  const SLACK_TOKEN   = document.getElementById('slack-token').value.trim();
-  const SLACK_CHANNEL = document.getElementById('slack-channel').value.trim();
+  const SLACK_TOKEN   = opts.token   || document.getElementById('slack-token').value.trim();
+  const SLACK_CHANNEL = opts.channel || document.getElementById('slack-channel').value.trim();
   if (!SLACK_TOKEN) return alert('Please enter your Slack Bot Token.');
 
   // Re-compute report data
@@ -1825,6 +1965,12 @@ async function sendReportToSlack() {
   const mtdROC     = reportRows.reduce((s,r)=>s+r.roc,0);
   const mtdTickets = reportRows.reduce((s,r)=>s+r.tickets,0);
   const mtdW4      = reportRows.reduce((s,r)=>s+r.w4,0);
+  const mtdAllTimes = Object.values(groups).flatMap(rows =>
+    rows.filter(r=>String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
+        .map(r=>parseTimeToHours(r[timeHeader])).filter(v=>!isNaN(v))
+  ).sort((a,b)=>a-b);
+  const mtdP50 = percentile(mtdAllTimes, 50);
+  const mtdP90 = percentile(mtdAllTimes, 90);
 
   // Inbound FTD & MTD
   let inbFtdRcvd=0, inbFtdAns=0, inbMtdRcvd=0, inbMtdAns=0;
@@ -1843,25 +1989,23 @@ async function sendReportToSlack() {
     inbMtdAns  = Object.values(iAns).reduce((s,v)=>s+v,0);
   }
 
+  const pad = (v, n) => String(v).padEnd(n);
   const text = [
-    `*:bar_chart: Trust Line — Daily Report*`,
+    `*:bar_chart: PTL Management Report*`,
+    `*FTD: ${ftdDate}* | *MTD: ${ftd.dk.slice(5,7)}/${ftd.dk.slice(0,4)}*`,
     ``,
-    `*:calendar: FTD — ${ftdDate}*`,
-    `> :telephone_receiver: *Total Call Received:* ${inboundData.length ? inbFtdRcvd : '—'}`,
-    `> :white_check_mark: *Answered %:* ${inboundData.length ? pct(inbFtdAns, inbFtdRcvd) : '—'}`,
-    `> :ticket: *Total Ticket Created:* ${ftd.total}`,
-    `> :green_heart: *Resolve on Call:* ${ftd.roc} (${pct(ftd.roc, ftd.total)})`,
-    `> :blue_heart: *L2 Ticket:* ${ftd.tickets}`,
-    `> :clock4: *Within 4 hrs:* ${ftd.w4} (${pct(ftd.w4, ftd.tickets)})`,
-    `> :stopwatch: *P50:* ${fmtH(ftd.p50)} | *P90:* ${fmtH(ftd.p90)}`,
-    ``,
-    `*:calendar: MTD — Grand Total*`,
-    `> :telephone_receiver: *Total Call Received:* ${inboundData.length ? inbMtdRcvd : '—'}`,
-    `> :white_check_mark: *Answered %:* ${inboundData.length ? pct(inbMtdAns, inbMtdRcvd) : '—'}`,
-    `> :ticket: *Total Ticket Created:* ${mtdTotal}`,
-    `> :green_heart: *Resolve on Call:* ${mtdROC} (${pct(mtdROC, mtdTotal)})`,
-    `> :blue_heart: *L2 Ticket:* ${mtdTickets}`,
-    `> :clock4: *Within 4 hrs:* ${mtdW4} (${pct(mtdW4, mtdTickets)})`,
+    `\`\`\``,
+    `Metric                  | FTD       | MTD`,
+    `------------------------|-----------|----------`,
+    `Total Tickets           | ${pad(ftd.total,9)} | ${mtdTotal}`,
+    `Resolve on Call (ROC)   | ${pad(ftd.roc,9)} | ${mtdROC}`,
+    `ROC %                   | ${pad(pct(ftd.roc,ftd.total),9)} | ${pct(mtdROC,mtdTotal)}`,
+    `Tickets Created (L2)    | ${pad(ftd.tickets,9)} | ${mtdTickets}`,
+    `Within 4 hrs            | ${pad(ftd.w4,9)} | ${mtdW4}`,
+    `W4h %                   | ${pad(pct(ftd.w4,ftd.tickets),9)} | ${pct(mtdW4,mtdTickets)}`,
+    `P50 Resolution          | ${pad(fmtH(ftd.p50),9)} | ${fmtH(mtdP50)}`,
+    `P90 Resolution          | ${pad(fmtH(ftd.p90),9)} | ${fmtH(mtdP90)}`,
+    `\`\`\``,
     ``,
     `_:robot_face: Shamshul's Dashboard | ${new Date().toLocaleString('en-IN')}_`
   ].join('\n');
@@ -1873,8 +2017,7 @@ async function sendReportToSlack() {
       body: JSON.stringify({ token: SLACK_TOKEN, channel: SLACK_CHANNEL, text })
     });
     const data = await res.json();
-    if (data.ok) alert('Report sent to Slack!');
-    else alert('Slack error: ' + data.error);
+    if (!data.ok) alert('Slack error: ' + data.error);
   } catch(e) {
     alert('Error: ' + e.message);
   }
@@ -1902,6 +2045,64 @@ function filterInboundAgent() {
     tr.style.display = (!q || tr.dataset.agent.includes(q)) ? '' : 'none';
   });
 }
+
+// ── CHANNEL PICKER ──
+const SLACK_BOT_TOKEN = '';
+let _channelPickerCallback = null;
+
+const PINNED_CHANNELS = [
+  { id: 'C0AJZBS9GFM', name: 'claude-test-purpose' },
+  { id: 'C09SBJYAUJU', name: 'trust-line-core-team' }
+];
+
+async function openChannelPicker(callback) {
+  _channelPickerCallback = callback;
+  const modal = document.getElementById('channel-picker-modal');
+  const list  = document.getElementById('channel-picker-list');
+  const search = document.getElementById('channel-picker-search');
+  modal.style.display = 'flex';
+  search.value = '';
+  renderChannelList(PINNED_CHANNELS, '');
+  search.oninput = () => renderChannelList(PINNED_CHANNELS, search.value.toLowerCase());
+}
+
+function renderChannelList(channels, query) {
+  const list = document.getElementById('channel-picker-list');
+  const filtered = channels.filter(c => c.name.toLowerCase().includes(query));
+  if (!filtered.length) { list.innerHTML = '<div style="color:#64748b;padding:16px;text-align:center;">No channels found</div>'; return; }
+  list.innerHTML = filtered.map(c => `
+    <div onclick="pickChannel('${c.id}','${c.name}')"
+      style="padding:10px 16px;cursor:pointer;border-bottom:1px solid #1e293b;color:#e2e8f0;font-size:13px;display:flex;align-items:center;gap:8px;"
+      onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background=''">
+      <span style="color:#64748b;">#</span> ${c.name}
+    </div>
+  `).join('');
+}
+
+async function pickChannel(id, name) {
+  document.getElementById('channel-picker-modal').style.display = 'none';
+  if (_channelPickerCallback) await _channelPickerCallback(id, name);
+}
+
+function closeChannelPicker() {
+  document.getElementById('channel-picker-modal').style.display = 'none';
+}
 </script>
+
+<!-- Channel Picker Modal -->
+<div id="channel-picker-modal" style="display:none;position:fixed;inset:0;background:#00000088;z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#0f172a;border:1px solid #334155;border-radius:14px;width:380px;max-height:520px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px #00000088;">
+    <div style="padding:16px 18px;border-bottom:1px solid #1e293b;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:#f1f5f9;">Select Channel</span>
+      <button onclick="closeChannelPicker()" style="background:none;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:12px 14px;border-bottom:1px solid #1e293b;">
+      <input id="channel-picker-search" type="text" placeholder="Search channels..." autocomplete="off"
+        style="width:100%;padding:8px 12px;background:#1e293b;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+    </div>
+    <div id="channel-picker-list" style="overflow-y:auto;flex:1;"></div>
+  </div>
+</div>
+
 </body>
 </html>

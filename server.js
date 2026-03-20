@@ -86,7 +86,7 @@ app.get('/api/slack-channels', async (req, res) => {
     });
     const data = await response.json();
     if (!data.ok) return res.status(400).json({ error: data.error });
-    const channels = data.channels.map(c => ({ id: c.id, name: c.name })).sort((a,b) => a.name.localeCompare(b.name));
+    const channels = data.channels.filter(c => c.is_member).map(c => ({ id: c.id, name: c.name })).sort((a,b) => a.name.localeCompare(b.name));
     res.json({ channels });
   } catch (err) {
     res.status(500).json({ error: err.message });
