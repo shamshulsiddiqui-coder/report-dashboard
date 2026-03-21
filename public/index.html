@@ -206,11 +206,11 @@
     .btn-generate:hover { background: #16a34a; }
 
     /* Summary cards */
-    .report-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
-    .summary-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 18px; }
-    .summary-card .s-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-    .summary-card .s-value { font-size: 26px; font-weight: 700; color: #f1f5f9; }
-    .summary-card .s-sub { font-size: 11px; color: #94a3b8; margin-top: 3px; }
+    .report-summary { display: flex; flex-wrap: nowrap; gap: 8px; margin-bottom: 24px; overflow-x: auto; }
+    .summary-card { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; flex: 1 1 0; min-width: 0; }
+    .summary-card .s-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; white-space: nowrap; }
+    .summary-card .s-value { font-size: 20px; font-weight: 700; color: #f1f5f9; }
+    .summary-card .s-sub { font-size: 9px; color: #94a3b8; margin-top: 2px; white-space: nowrap; }
     .summary-card.green { border-color: #22c55e44; }
     .summary-card.green .s-value { color: #22c55e; }
     .summary-card.blue { border-color: #6366f144; }
@@ -903,7 +903,11 @@ function generateReport() {
     return isNaN(da) ? 1 : isNaN(db) ? -1 : db - da;
   });
 
-  // Totals
+  // FTD = latest date (report sorted newest first)
+  const ftdRow = report[0];
+  const ftdKey = ftdRow ? ftdRow.dateKey : null;
+
+  // MTD Totals
   const sumTotal    = report.reduce((s, r) => s + r.total, 0);
   const sumROC      = report.reduce((s, r) => s + r.resolveOnCall, 0);
   const sumTickets  = sumTotal - sumROC;
@@ -911,6 +915,23 @@ function generateReport() {
   const sumW4       = report.reduce((s, r) => s + r.within4h, 0);
   const sumP4h      = report.reduce((s, r) => s + r.pending4h, 0);
   const sumP48h     = report.reduce((s, r) => s + r.pending48h, 0);
+
+  // Inbound totals for cards
+  let grandInbRcvd = 0, grandInbAns = 0, inbByDate = {}, inbAnsByDate = {};
+  if (inboundData.length) {
+    const dtH=inboundHeaders[3], quH=inboundHeaders[6], dpH=inboundHeaders[10];
+    inboundData.forEach(row=>{
+      const rawD=String(row[dtH]||'').trim(); if(!rawD) return;
+      const dk=normalizeDate(rawD.split(' ')[0]); if(!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
+      const qu=String(row[quH]||'').trim(), dp=String(row[dpH]||'').trim().toUpperCase();
+      if(qu){inbByDate[dk]=(inbByDate[dk]||0)+1; grandInbRcvd++; if(dp==='CONNECTED'){inbAnsByDate[dk]=(inbAnsByDate[dk]||0)+1; grandInbAns++;}}
+    });
+  }
+  const grandInbAnsPct = grandInbRcvd ? ((grandInbAns/grandInbRcvd)*100).toFixed(1)+'%' : '—';
+  const ftdInbRcvd = ftdKey ? (inbByDate[ftdKey] || 0) : 0;
+  const ftdInbAns  = ftdKey ? (inbAnsByDate[ftdKey] || 0) : 0;
+  const ftdInbAnsPct = ftdInbRcvd ? ((ftdInbAns/ftdInbRcvd)*100).toFixed(1)+'%' : '—';
+
   const allP50s  = report.filter(r => !isNaN(r.p50)).map(r => r.p50).sort((a,b)=>a-b);
   const allP90s  = report.filter(r => !isNaN(r.p90)).map(r => r.p90).sort((a,b)=>a-b);
   const overallP50 = percentile(allP50s, 50);
@@ -922,56 +943,96 @@ function generateReport() {
 
   document.getElementById('report-output').innerHTML = `
 
-    <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:#64748b;display:flex;gap:24px;flex-wrap:wrap;">
-      <span>📅 <b style="color:#94a3b8">Date col (B):</b> "${dateHeader}"</span>
-      <span>📋 <b style="color:#94a3b8">Status col (CG):</b> "${statusHeader}"</span>
-      <span>⏱ <b style="color:#94a3b8">Time col (T):</b> "${timeHeader}"</span>
-      <span>✅ <b style="color:#94a3b8">ROC keyword:</b> "${rocDetected}"</span>
-      <span>🏁 <b style="color:#94a3b8">Completed keyword:</b> "${compDetected}"</span>
-      <span>📊 <b style="color:#94a3b8">CG unique values:</b> ${uniqueStatuses.map(v=>`<span style="background:#1e293b;border:1px solid #334155;border-radius:4px;padding:1px 6px;color:#cbd5e1">${v}</span>`).join(' ')}</span>
-    </div>
 
+    <!-- MTD Row -->
+    <div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">MTD</div>
     <div class="report-summary">
+      ${inboundData.length ? `
+      <div class="summary-card yellow">
+        <div class="s-label">Total Call Received</div>
+        <div class="s-value">${grandInbRcvd.toLocaleString()}</div>
+      </div>
+      <div class="summary-card yellow">
+        <div class="s-label">Answered %</div>
+        <div class="s-value">${grandInbAnsPct}</div>
+      </div>` : ''}
       <div class="summary-card">
         <div class="s-label">Total Ticket Created</div>
         <div class="s-value">${sumTotal.toLocaleString()}</div>
-        <div class="s-sub">Across ${report.length} dates</div>
       </div>
       <div class="summary-card">
         <div class="s-label">L2 Ticket</div>
         <div class="s-value">${sumTickets.toLocaleString()}</div>
-        <div class="s-sub">Total − Resolve on Call</div>
       </div>
       <div class="summary-card green">
         <div class="s-label">Resolve on Call</div>
         <div class="s-value">${sumROC.toLocaleString()}</div>
-        <div class="s-sub">${pct(sumROC, sumTotal)} of total</div>
       </div>
       <div class="summary-card blue">
-        <div class="s-label">Resolved within 4 hrs</div>
+        <div class="s-label">Within 4 hrs</div>
         <div class="s-value">${sumW4.toLocaleString()}</div>
-        <div class="s-sub">${pct(sumW4, sumTotal)} of total</div>
       </div>
       <div class="summary-card yellow">
-        <div class="s-label">Overall P50</div>
+        <div class="s-label">P50</div>
         <div class="s-value">${fmtH(overallP50)}</div>
-        <div class="s-sub">Completed tickets only</div>
       </div>
       <div class="summary-card yellow">
-        <div class="s-label">Overall P90</div>
+        <div class="s-label">P90</div>
         <div class="s-value">${fmtH(overallP90)}</div>
-        <div class="s-sub">Completed tickets only</div>
+      </div>
+      <div class="summary-card" style="border-color:#fb923c44;">
+        <div class="s-label">Pending &gt; 4h</div>
+        <div class="s-value" style="color:#fb923c;">${sumP4h.toLocaleString()}</div>
+      </div>
+      <div class="summary-card" style="border-color:#f8717144;">
+        <div class="s-label">Pending &gt; 48h</div>
+        <div class="s-value" style="color:#f87171;">${sumP48h.toLocaleString()}</div>
       </div>
     </div>
 
-    <div class="report-charts">
-      <div class="report-chart-panel">
-        <div class="panel-header"><h3>L2 Ticket vs Resolve on Call vs Within 4h</h3></div>
-        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-1"></canvas></div></div>
+    <!-- FTD Row -->
+    <div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">FTD — ${ftdRow ? ftdRow.dateDisplay : ''}</div>
+    <div class="report-summary">
+      ${inboundData.length ? `
+      <div class="summary-card yellow">
+        <div class="s-label">Total Call Received</div>
+        <div class="s-value">${ftdInbRcvd.toLocaleString()}</div>
       </div>
-      <div class="report-chart-panel">
-        <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3></div>
-        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-2"></canvas></div></div>
+      <div class="summary-card yellow">
+        <div class="s-label">Answered %</div>
+        <div class="s-value">${ftdInbAnsPct}</div>
+      </div>` : ''}
+      <div class="summary-card">
+        <div class="s-label">Total Ticket Created</div>
+        <div class="s-value">${ftdRow ? ftdRow.total : '—'}</div>
+      </div>
+      <div class="summary-card">
+        <div class="s-label">L2 Ticket</div>
+        <div class="s-value">${ftdRow ? ftdRow.ticketsCreated : '—'}</div>
+      </div>
+      <div class="summary-card green">
+        <div class="s-label">Resolve on Call</div>
+        <div class="s-value">${ftdRow ? ftdRow.resolveOnCall : '—'}</div>
+      </div>
+      <div class="summary-card blue">
+        <div class="s-label">Within 4 hrs</div>
+        <div class="s-value">${ftdRow ? ftdRow.within4h : '—'}</div>
+      </div>
+      <div class="summary-card yellow">
+        <div class="s-label">P50</div>
+        <div class="s-value">${ftdRow ? fmtH(ftdRow.p50) : '—'}</div>
+      </div>
+      <div class="summary-card yellow">
+        <div class="s-label">P90</div>
+        <div class="s-value">${ftdRow ? fmtH(ftdRow.p90) : '—'}</div>
+      </div>
+      <div class="summary-card" style="border-color:#fb923c44;">
+        <div class="s-label">Pending &gt; 4h</div>
+        <div class="s-value" style="color:#fb923c;">${ftdRow ? ftdRow.pending4h : '—'}</div>
+      </div>
+      <div class="summary-card" style="border-color:#f8717144;">
+        <div class="s-label">Pending &gt; 48h</div>
+        <div class="s-value" style="color:#f87171;">${ftdRow ? ftdRow.pending48h : '—'}</div>
       </div>
     </div>
 
@@ -991,31 +1052,17 @@ function generateReport() {
             </tr>
           </thead>
           <tbody>
-            ${(()=>{
-              if (!inboundData.length) return `<tr><td class="td-date" colspan="${report.length+2}" style="color:#64748b;font-style:italic;padding:10px 16px;">📞 Connect Sheet2 in Inbound tab to see call metrics</td></tr>`;
-              const dtH=inboundHeaders[3], quH=inboundHeaders[6], dpH=inboundHeaders[10];
-              const iRcvd={}, iAns={};
-              inboundData.forEach(row=>{
-                const rawD=String(row[dtH]||'').trim(); if(!rawD) return;
-                const dk=normalizeDate(rawD.split(' ')[0]); if(!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
-                const qu=String(row[quH]||'').trim(), dp=String(row[dpH]||'').trim().toUpperCase();
-                if(qu){iRcvd[dk]=(iRcvd[dk]||0)+1; if(dp==='CONNECTED')iAns[dk]=(iAns[dk]||0)+1;}
-              });
-              const p=(a,b)=>b?(a/b*100).toFixed(1)+'%':'—';
-              const gR=Object.values(iRcvd).reduce((s,v)=>s+v,0);
-              const gA=Object.values(iAns).reduce((s,v)=>s+v,0);
-              return `
+            ${inboundData.length ? `
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
-                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${gR}</td>
-                  ${report.map(r=>`<td style="text-align:right;color:#fbbf24;">${iRcvd[r.dateKey]||0}</td>`).join('')}
+                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${grandInbRcvd}</td>
+                  ${report.map(r=>`<td style="text-align:right;color:#fbbf24;">${inbByDate[r.dateKey]||0}</td>`).join('')}
                 </tr>
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#818cf8;">Answered %</td>
-                  <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${p(gA,gR)}</td>
-                  ${report.map(r=>`<td style="text-align:right;color:#818cf8;">${p(iAns[r.dateKey]||0,iRcvd[r.dateKey]||0)}</td>`).join('')}
-                </tr>`;
-            })()}
+                  <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${grandInbAnsPct}</td>
+                  ${report.map(r=>`<td style="text-align:right;color:#818cf8;">${inbByDate[r.dateKey]?(((inbAnsByDate[r.dateKey]||0)/inbByDate[r.dateKey])*100).toFixed(1)+'%':'—'}</td>`).join('')}
+                </tr>` : `<tr><td class="td-date" colspan="${report.length+2}" style="color:#64748b;font-style:italic;padding:10px 16px;">📞 Inbound data loading...</td></tr>`}
             <tr data-ptlmetric="Total Ticket Created">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Total Ticket Created</td>
               <td class="td-num td-total">${sumTotal}</td>
@@ -1068,6 +1115,17 @@ function generateReport() {
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="report-charts">
+      <div class="report-chart-panel">
+        <div class="panel-header"><h3>L2 Ticket vs Resolve on Call vs Within 4h</h3></div>
+        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-1"></canvas></div></div>
+      </div>
+      <div class="report-chart-panel">
+        <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3></div>
+        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-2"></canvas></div></div>
       </div>
     </div>
   `;

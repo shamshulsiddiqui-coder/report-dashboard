@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/appsscript', express.static(path.join(__dirname, 'appsscript')));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Follow redirects with cookies
 function fetchCsv(url, cookies, redirectsLeft, res) {
@@ -113,6 +113,44 @@ app.post('/api/slack', async (req, res) => {
     const data = await response.json();
     if (data.ok) res.json({ ok: true });
     else res.status(400).json({ error: data.error });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Slack — upload chart image (PNG)
+app.post('/api/slack-upload', async (req, res) => {
+  const { token, channel, imageBase64, filename, title } = req.body;
+  if (!token || !channel || !imageBase64) return res.status(400).json({ error: 'Missing params' });
+  try {
+    const buf = Buffer.from(imageBase64.replace(/^data:image\/png;base64,/, ''), 'base64');
+    const fname = filename || 'chart.png';
+
+    // Step 1: Get upload URL
+    const urlRes = await fetch('https://slack.com/api/files.getUploadURLExternal', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `filename=${encodeURIComponent(fname)}&length=${buf.length}`
+    });
+    const urlData = await urlRes.json();
+    if (!urlData.ok) return res.status(400).json({ error: urlData.error });
+
+    // Step 2: Upload file content
+    await fetch(urlData.upload_url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: buf
+    });
+
+    // Step 3: Complete upload and share to channel
+    const completeRes = await fetch('https://slack.com/api/files.completeUploadExternal', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: [{ id: urlData.file_id, title: title || fname }], channel_id: channel })
+    });
+    const completeData = await completeRes.json();
+    if (completeData.ok) res.json({ ok: true });
+    else res.status(400).json({ error: completeData.error });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
