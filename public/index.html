@@ -255,6 +255,22 @@
 <header>
   <h1>Shamshul</h1>
   <span class="slogan">⚡ WIOM — Ghar Ka Net</span>
+  <div class="refresh-controls" style="display:flex;align-items:center;gap:8px;">
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;">
+      <span>Auto-refresh</span>
+      <label class="toggle">
+        <input type="checkbox" id="auto-refresh-toggle" />
+        <span class="slider"></span>
+      </label>
+    </label>
+    <select id="refresh-interval" style="font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#94a3b8;">
+      <option value="15">15s</option>
+      <option value="30" selected>30s</option>
+      <option value="60">1 min</option>
+      <option value="300">5 min</option>
+    </select>
+    <span id="countdown-badge">Next refresh: <span id="countdown">--</span>s</span>
+  </div>
   <button id="theme-toggle" onclick="toggleTheme()" style="padding:6px 14px;border-radius:8px;border:1px solid #78350f;background:transparent;color:#fbbf24;font-size:13px;cursor:pointer;">🌙 Dark</button>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
@@ -267,24 +283,6 @@
   <!-- ══════════ DASHBOARD TAB ══════════ -->
   <div class="tab-panel active" id="tab-dashboard">
 
-    <div class="connect-bar">
-      <div class="refresh-controls">
-        <label>
-          <span>Auto-refresh</span>
-          <label class="toggle">
-            <input type="checkbox" id="auto-refresh-toggle" />
-            <span class="slider"></span>
-          </label>
-        </label>
-        <select id="refresh-interval">
-          <option value="15">15s</option>
-          <option value="30" selected>30s</option>
-          <option value="60">1 min</option>
-          <option value="300">5 min</option>
-        </select>
-      </div>
-      <span id="countdown-badge">Next refresh: <span id="countdown">--</span>s</span>
-    </div>
 
     <div id="status-bar">
       <div class="status-dot" id="status-dot"></div>
@@ -320,14 +318,30 @@
 
     <!-- Sub-nav (shown after data loads) -->
     <div id="sub-nav" style="display:none;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:12px;">
-      <button id="snbtn-rawview" class="sn-btn sn-active" onclick="switchSubTab('rawview')">📋 Raw View</button>
-      <button id="snbtn-report" class="sn-btn" onclick="switchSubTab('report')">📊 PTL Management Report</button>
+      <button id="snbtn-report" class="sn-btn sn-active" onclick="switchSubTab('report')">📊 PTL Management Report</button>
       <button id="snbtn-agentreport" class="sn-btn" onclick="switchSubTab('agentreport')">👤 Agent Wise Report</button>
+      <button id="snbtn-rawview" class="sn-btn" onclick="switchSubTab('rawview')">📋 Raw View</button>
       <button id="snbtn-analysis" class="sn-btn" onclick="switchSubTab('analysis')">🤖 Analysis</button>
     </div>
 
     <!-- Raw View sub-panel -->
-    <div id="subtab-rawview">
+    <div id="subtab-rawview" style="display:none">
+
+      <!-- PTL Metric Filter -->
+      <div id="ptl-metric-filter" style="display:none;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 16px;margin-bottom:12px;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">PTL Metric Filter:</span>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="Total Ticket Created" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> Total Ticket Created</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="Resolve on Call" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> Resolve on Call</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="ROC %" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> ROC %</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="L2 Ticket" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> L2 Ticket</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="Within 4 hrs" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> Within 4 hrs</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="W4h %" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> W4h %</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="P50 (hrs)" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> P50 (hrs)</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="P90 (hrs)" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> P90 (hrs)</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="Ticket Pending > 4 Hours" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> Ticket Pending &gt; 4 Hours</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;"><input type="checkbox" checked data-ptlmetric="Ticket Pending > 48 Hours" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" /> Ticket Pending &gt; 48 Hours</label>
+      </div>
+
       <div class="panel" id="raw-table-panel" style="display:none">
         <div class="panel-header">
           <h3>Raw Data</h3>
@@ -520,6 +534,11 @@ function switchSubTab(name) {
   });
   document.getElementById('subtab-' + name).style.display = 'block';
   document.getElementById('snbtn-' + name).classList.add('sn-active');
+  const isRaw = name === 'rawview';
+  const filtersEl = document.getElementById('dash-filters');
+  const ptlFilterEl = document.getElementById('ptl-metric-filter');
+  if (filtersEl) filtersEl.style.display = isRaw ? 'flex' : 'none';
+  if (ptlFilterEl) ptlFilterEl.style.display = isRaw ? 'flex' : 'none';
   if (name === 'report' && rawData.length) generateReport();
   if (name === 'agentreport' && rawData.length) generateAgentReport();
 }
@@ -603,11 +622,13 @@ async function loadSheet() {
 }
 
 loadSheet();
+loadInboundSheet();
 
 function renderRawTable(headers, rows) {
   document.getElementById('empty-state').style.display = 'none';
   document.getElementById('raw-table-panel').style.display = 'block';
   document.getElementById('sub-nav').style.display = 'flex';
+  switchSubTab('report');
 
   // Populate filter dropdowns
   const colK  = colLetterToIndex('K');
@@ -617,9 +638,6 @@ function renderRawTable(headers, rows) {
 
   populateDropdown('dash-landing', [...new Set(rawData.map(r => String(r[landingHeader] || '').trim()))].filter(Boolean).sort());
   populateDropdown('dash-status',  [...new Set(rawData.map(r => String(r[statusHeader2] || '').trim()))].filter(Boolean).sort());
-
-  const filtersEl = document.getElementById('dash-filters');
-  filtersEl.style.display = 'flex';
 
   showFilteredTable(headers, rows);
 }
@@ -961,17 +979,6 @@ function generateReport() {
       <div class="panel-header">
         <h3>Date-wise Breakdown</h3>
         <span style="font-size:12px;color:#64748b">${report.length} dates &nbsp;|&nbsp; ${sumTotal} tickets</span>
-      </div>
-
-      <!-- Metric Filter -->
-      <div style="padding:12px 16px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Metric Filter:</span>
-        ${['Total Ticket Created','Resolve on Call','ROC %','L2 Ticket','Within 4 hrs','W4h %','P50 (hrs)','P90 (hrs)','Ticket Pending > 4 Hours','Ticket Pending > 48 Hours'].map(m=>`
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#e2e8f0;cursor:pointer;white-space:nowrap;">
-            <input type="checkbox" checked data-ptlmetric="${m}" onchange="filterPtlMetric()" style="accent-color:#6366f1;width:13px;height:13px;" />
-            ${m}
-          </label>
-        `).join('')}
       </div>
 
       <div class="report-table-wrap">
@@ -1402,6 +1409,8 @@ async function loadInboundSheet() {
     document.getElementById('inbound-row-count').textContent = `${rows.length} rows × ${headers.length} cols`;
 
     renderInboundReport();
+    // If PTL report is currently visible, re-render it to show call metrics
+    if (document.getElementById('subtab-report').style.display !== 'none' && rawData.length) generateReport();
   } catch(err) {
     statusEl.textContent = 'Error: ' + err.message;
     document.getElementById('inbound-empty').innerHTML = `<div class="no-data-msg"><h3>Could not load sheet</h3><p>${err.message}</p><p>Make sure sheet is shared as "Anyone with the link can view"</p></div>`;
@@ -1953,6 +1962,8 @@ async function sendReportToSlack(opts = {}) {
     `W4h %                   | ${pad(pct(ftd.w4,ftd.tickets),9)} | ${pct(mtdW4,mtdTickets)}`,
     `P50 Resolution          | ${pad(fmtH(ftd.p50),9)} | ${fmtH(mtdP50)}`,
     `P90 Resolution          | ${pad(fmtH(ftd.p90),9)} | ${fmtH(mtdP90)}`,
+    `Pending > 4 hrs         | ${pad(ftd.pending4h,9)} | ${mtdP4h}`,
+    `Pending > 48 hrs        | ${pad(ftd.pending48h,9)} | ${mtdP48h}`,
     `\`\`\``,
     ``,
     `_:robot_face: Shamshul's Dashboard | ${new Date().toLocaleString('en-IN')}_`
