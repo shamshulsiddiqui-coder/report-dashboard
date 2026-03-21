@@ -32,8 +32,8 @@ function fetchCsv(url, cookies, redirectsLeft, res) {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     response.pipe(res);
   });
-  req.on('error', err => res.status(500).json({ error: err.message }));
-  req.setTimeout(15000, () => { req.destroy(); res.status(504).json({ error: 'Timeout' }); });
+  req.on('error', err => { if (!res.headersSent) res.status(500).json({ error: err.message }); });
+  req.setTimeout(15000, () => { req.destroy(); if (!res.headersSent) res.status(504).json({ error: 'Timeout' }); });
 }
 
 app.get('/api/sheet', (req, res) => {
