@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Trust Line Dashboard</title>
+  <title>Trust Line Calling Report</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -253,7 +253,7 @@
 <body>
 
 <header>
-  <h1>Trust Line Dashboard</h1>
+  <h1>Trust Line Calling Report</h1>
   <span class="slogan">⚡ WIOM — Ghar Ka Net</span>
   <div class="refresh-controls" style="display:flex;align-items:center;gap:8px;">
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;">
@@ -2087,7 +2087,7 @@ async function _doSendInbound(CHANNEL) {
       `Answered %                       | ${pad(ftd.ansPct,9)} | ${mtd.ansPct}`,
       `\`\`\``,
       ``,
-      `_:robot_face: Trust Line Dashboard | ${new Date().toLocaleString('en-IN')}_`
+      `_:robot_face: Trust Line Calling Report | ${new Date().toLocaleString('en-IN')}_`
     ].join('\n');
 
     const res = await fetch('/api/slack', {
@@ -2212,7 +2212,7 @@ async function sendReportToSlack(opts = {}) {
     `Pending > 48 hrs        | ${pad(ftd.pending48h,9)} | ${mtdP48h}`,
     `\`\`\``,
     ``,
-    `_:robot_face: Trust Line Dashboard | ${new Date().toLocaleString('en-IN')}_`
+    `_:robot_face: Trust Line Calling Report | ${new Date().toLocaleString('en-IN')}_`
   ].join('\n');
 
   try {
