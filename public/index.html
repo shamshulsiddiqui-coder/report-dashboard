@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shamshul</title>
+  <title>Trust Line Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -253,7 +253,7 @@
 <body>
 
 <header>
-  <h1>Shamshul</h1>
+  <h1>Trust Line Dashboard</h1>
   <span class="slogan">⚡ WIOM — Ghar Ka Net</span>
   <div class="refresh-controls" style="display:flex;align-items:center;gap:8px;">
     <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#94a3b8;">
@@ -415,19 +415,21 @@
     <!-- Analysis sub-panel -->
     <div id="subtab-analysis" style="display:none">
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
-        <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-right:auto;">New Project Analysis</h2>
+        <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-right:auto;">Partner Question Analysis</h2>
         <button onclick="runAnalysis()" style="padding:10px 24px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Run AI Analysis</button>
         <button onclick="stopAnalysis()" id="stop-btn" style="padding:10px 16px;background:transparent;color:#f87171;border:1px solid #f87171;border-radius:8px;font-size:13px;cursor:pointer;display:none;">Stop</button>
       </div>
-      <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px 20px;margin-bottom:20px;">
+
+      <!-- Config Panel -->
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px 20px;margin-bottom:16px;">
         <div style="font-size:11px;color:#6366f1;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px;font-weight:600;">Configuration</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;">
           <div>
             <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Anthropic API Key</label>
             <input type="password" id="ana-api-key" placeholder="sk-ant-..." style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
           </div>
           <div>
-            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Landing Folder Col (K) — filter value</label>
+            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Landing Folder Filter (Col K)</label>
             <input type="text" id="ana-lf-value" placeholder="New Project" value="New Project" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
           </div>
           <div>
@@ -435,11 +437,21 @@
             <input type="text" id="ana-q-col" value="BX" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;text-transform:uppercase;" />
           </div>
           <div>
-            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Phone Col</label>
+            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Caller Number Col</label>
             <input type="text" id="ana-phone-col" value="CB" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;text-transform:uppercase;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Date From</label>
+            <input type="date" id="ana-date-from" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;">Date To</label>
+            <input type="date" id="ana-date-to" style="width:100%;padding:8px 12px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;outline:none;" />
           </div>
         </div>
       </div>
+
+      <!-- Progress -->
       <div id="ana-progress" style="display:none;background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
           <div style="width:10px;height:10px;border-radius:50%;background:#6366f1;animation:pulse 1s infinite;"></div>
@@ -449,6 +461,8 @@
           <div id="ana-progress-bar" style="height:100%;background:#6366f1;width:0%;transition:width 0.3s;border-radius:6px;"></div>
         </div>
       </div>
+
+      <!-- Output Area -->
       <div id="ana-output">
         <div class="no-data-msg"><h3>No analysis yet</h3><p>Connect a Google Sheet, enter your API key, then click "Run AI Analysis"</p></div>
       </div>
@@ -497,7 +511,7 @@ let rawData = [], rawHeaders = [];
 let countdownTimer = null, countdownValue = 30;
 let currentSheetUrl = '';
 let isLoading = false;
-let reportChart1 = null, reportChart2 = null;
+let reportChart1 = null, reportChart2 = null, analysisChart = null;
 
 // Column config (fixed as per user requirement)
 const COL_DATE   = 'B';   // Column B
@@ -1183,25 +1197,43 @@ async function runAnalysis() {
   const lfValue  = document.getElementById('ana-lf-value').value.trim().toLowerCase();
   const qCol     = document.getElementById('ana-q-col').value.trim().toUpperCase();
   const phoneCol = document.getElementById('ana-phone-col').value.trim().toUpperCase();
+  const fromVal  = document.getElementById('ana-date-from').value;
+  const toVal    = document.getElementById('ana-date-to').value;
 
-  if (!apiKey) { alert('Anthropic API key enter करें'); return; }
+  if (!apiKey) { alert('Please enter Anthropic API key'); return; }
 
   const lfIdx    = colLetterToIndex('K');
   const qIdx     = colLetterToIndex(qCol);
   const phoneIdx = colLetterToIndex(phoneCol);
+  const dateIdx  = colLetterToIndex('B');
 
   const lfHeader    = rawHeaders[lfIdx];
   const qHeader     = rawHeaders[qIdx];
   const phoneHeader = rawHeaders[phoneIdx];
+  const dateHeader  = rawHeaders[dateIdx];
 
-  // Filter New Project rows with a question
-  const filtered = rawData.filter(r =>
-    String(r[lfHeader] || '').toLowerCase().includes(lfValue) &&
-    String(r[qHeader] || '').trim()
-  );
+  const fromDate = fromVal ? new Date(fromVal) : null;
+  const toDate   = toVal   ? new Date(toVal)   : null;
+
+  // Filter rows: landing folder + question present + date range
+  const filtered = rawData.filter(r => {
+    if (lfValue && !String(r[lfHeader] || '').toLowerCase().includes(lfValue)) return false;
+    if (!String(r[qHeader] || '').trim()) return false;
+    if (fromDate || toDate) {
+      const dk = normalizeDate(r[dateHeader]);
+      const d  = new Date(dk);
+      if (fromDate && d < fromDate) return false;
+      if (toDate   && d > toDate)   return false;
+    }
+    return true;
+  });
 
   if (!filtered.length) {
-    document.getElementById('ana-output').innerHTML = `<div class="no-data-msg"><h3>कोई row नहीं मिली</h3><p>Landing Folder (Col K) में "${lfValue}" नहीं मिला या Question column खाली है।</p></div>`;
+    document.getElementById('ana-output').innerHTML = `<div class="no-data-msg"><h3>No rows found</h3>
+      <p>Total rows in sheet: <b>${rawData.length}</b></p>
+      <p>Landing Folder col (K): <b>${lfHeader || 'NOT FOUND'}</b> — filter: "<b>${lfValue}</b>"</p>
+      <p>Question col (${qCol}): <b>${qHeader || 'NOT FOUND — column may not exist'}</b></p>
+      <p>Check that the column letters above are correct and the filter value matches your data.</p></div>`;
     return;
   }
 
@@ -1214,16 +1246,16 @@ async function runAnalysis() {
   for (let i = 0; i < filtered.length; i++) {
     if (!analysisRunning) break;
 
-    const row = filtered[i];
+    const row      = filtered[i];
     const phone    = String(row[phoneHeader] || '—').trim();
     const question = String(row[qHeader] || '').trim();
+    const date     = normalizeDate(row[dateHeader]);
 
-    // Update progress
     const pct = Math.round(((i + 1) / filtered.length) * 100);
     document.getElementById('ana-progress-text').textContent = `Processing ${i + 1} of ${filtered.length}...`;
     document.getElementById('ana-progress-bar').style.width = pct + '%';
 
-    let verbatim = '—';
+    let verbatim = '—', sub_category = 'General Query';
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -1231,22 +1263,27 @@ async function runAnalysis() {
         body: JSON.stringify({ text: question, apiKey })
       });
       const data = await res.json();
-      verbatim = data.verbatim || data.error || '—';
+      if (data.error) {
+        verbatim = '⚠️ API Error: ' + data.error;
+        sub_category = 'Error';
+      } else {
+        verbatim     = data.verbatim     || '—';
+        sub_category = data.sub_category || 'General Query';
+      }
     } catch (e) {
-      verbatim = 'Error: ' + e.message;
+      verbatim = '⚠️ ' + e.message;
+      sub_category = 'Error';
     }
 
-    results.push({ phone, question, verbatim });
+    results.push({ phone, question, verbatim, sub_category, date });
     renderAnalysisResults(results, filtered.length);
 
-    // Small delay to avoid rate limits
     if (i < filtered.length - 1) await new Promise(r => setTimeout(r, 300));
   }
 
   analysisRunning = false;
   document.getElementById('stop-btn').style.display = 'none';
   document.getElementById('ana-progress').style.display = 'none';
-  document.getElementById('ana-progress-text').textContent = 'Done!';
 }
 
 function stopAnalysis() {
@@ -1255,31 +1292,186 @@ function stopAnalysis() {
   document.getElementById('ana-progress').style.display = 'none';
 }
 
+// ── ANALYSIS CHART COLORS ──
+const ANA_COLORS = [
+  '#6366f1','#f59e0b','#22c55e','#f43f5e','#06b6d4','#a855f7',
+  '#fb923c','#84cc16','#38bdf8','#e879f9','#34d399','#fbbf24'
+];
+
 function renderAnalysisResults(results, total) {
-  document.getElementById('ana-output').innerHTML = `
-    <div style="margin-bottom:12px;font-size:13px;color:#64748b;">${results.length} of ${total} processed</div>
-    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;">
-      <div style="overflow-x:auto;max-height:600px;overflow-y:auto;">
-        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+  // ── Build aggregations ──
+  const byCat = {};   // { catName: { count, phones: [], rows: [] } }
+  const byDateCat = {}; // { date: { catName: count } }
+
+  results.forEach(r => {
+    const cat  = r.sub_category || 'General Query';
+    const date = r.date || 'Unknown';
+
+    if (!byCat[cat]) byCat[cat] = { count: 0, phones: [], rows: [] };
+    byCat[cat].count++;
+    if (r.phone && r.phone !== '—') byCat[cat].phones.push(r.phone);
+    byCat[cat].rows.push(r);
+
+    if (!byDateCat[date]) byDateCat[date] = {};
+    byDateCat[date][cat] = (byDateCat[date][cat] || 0) + 1;
+  });
+
+  const allCats  = Object.keys(byCat).sort((a, b) => byCat[b].count - byCat[a].count);
+  const allDates = Object.keys(byDateCat).filter(d => d !== 'Unknown').sort();
+  const colorMap = {};
+  allCats.forEach((c, i) => { colorMap[c] = ANA_COLORS[i % ANA_COLORS.length]; });
+
+  // ── 1. Progress line ──
+  let html = `<div style="margin-bottom:16px;font-size:13px;color:#64748b;">${results.length} of ${total} processed</div>`;
+
+  // ── 2. Summary cards ──
+  html += `<div style="margin-bottom:24px;">
+    <div style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+      <span style="width:12px;height:12px;border-radius:3px;background:#6366f1;display:inline-block;"></span>
+      Sub-Category Summary
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">`;
+
+  allCats.forEach(cat => {
+    const c = byCat[cat];
+    const color = colorMap[cat];
+    const uniquePhones = [...new Set(c.phones)];
+    html += `
+      <div style="background:#1e293b;border:1px solid #334155;border-left:3px solid ${color};border-radius:10px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;color:#f1f5f9;">${cat}</div>
+          <div style="font-size:22px;font-weight:800;color:${color};">${c.count}</div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;">Caller Numbers (${uniquePhones.length})</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.7;max-height:60px;overflow:hidden;text-overflow:ellipsis;">${uniquePhones.slice(0,6).join(', ')}${uniquePhones.length > 6 ? ` <span style="color:#6366f1;">+${uniquePhones.length - 6} more</span>` : ''}</div>
+      </div>`;
+  });
+  html += `</div></div>`;
+
+  // ── 3. Date-wise chart ──
+  if (allDates.length > 0 && results.length === total) {
+    html += `<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:24px;">
+      <div style="font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+        <span style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block;"></span>
+        Date-wise Sub-Category Count
+      </div>
+      <div style="position:relative;height:280px;"><canvas id="ana-chart"></canvas></div>
+    </div>`;
+  }
+
+  // ── 4. Date-wise table ──
+  if (allDates.length > 0) {
+    html += `<div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      <div style="padding:14px 18px;border-bottom:1px solid #334155;font-size:13px;font-weight:700;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+        <span style="width:12px;height:12px;border-radius:3px;background:#22c55e;display:inline-block;"></span>
+        Date-wise Sub-Category Breakdown
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
           <thead>
             <tr>
-              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;white-space:nowrap;width:140px;">Phone</th>
-              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;">Question by Partner</th>
-              <th style="background:#0f172a;padding:12px 16px;text-align:left;color:#6366f1;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;top:0;">AI Verbatim</th>
+              <th style="background:#0f172a;padding:10px 14px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;position:sticky;left:0;z-index:1;white-space:nowrap;min-width:100px;">Date</th>
+              ${allCats.map(cat => `<th style="background:#0f172a;padding:10px 14px;text-align:center;color:${colorMap[cat]};font-size:11px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">${cat}</th>`).join('')}
+              <th style="background:#1a2744;padding:10px 14px;text-align:center;color:#fbbf24;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;">Total</th>
             </tr>
           </thead>
           <tbody>
-            ${results.map(r => `
+            ${allDates.map(date => {
+              const row = byDateCat[date] || {};
+              const rowTotal = allCats.reduce((s, c) => s + (row[c] || 0), 0);
+              return `<tr style="border-bottom:1px solid #0f172a;">
+                <td style="padding:9px 14px;color:#e2e8f0;font-weight:600;background:#1e293b;position:sticky;left:0;white-space:nowrap;">${date}</td>
+                ${allCats.map(cat => `<td style="padding:9px 14px;text-align:center;color:${row[cat] ? colorMap[cat] : '#334155'};">${row[cat] || '—'}</td>`).join('')}
+                <td style="padding:9px 14px;text-align:center;color:#fbbf24;font-weight:700;background:#1a2744;">${rowTotal}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid #334155;">
+              <td style="padding:10px 14px;color:#fbbf24;font-weight:700;background:#1a2744;position:sticky;left:0;">Total</td>
+              ${allCats.map(cat => `<td style="padding:10px 14px;text-align:center;color:${colorMap[cat]};font-weight:700;background:#1a2744;">${byCat[cat].count}</td>`).join('')}
+              <td style="padding:10px 14px;text-align:center;color:#fbbf24;font-weight:800;background:#1a2744;">${results.length}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>`;
+  }
+
+  // ── 5. Detailed verbatims by sub-category ──
+  html += `<div style="margin-bottom:8px;font-size:13px;font-weight:700;color:#f1f5f9;display:flex;align-items:center;gap:8px;">
+    <span style="width:12px;height:12px;border-radius:3px;background:#06b6d4;display:inline-block;"></span>
+    Enhanced Verbatims by Sub-Category
+  </div>`;
+
+  allCats.forEach(cat => {
+    const c = byCat[cat];
+    const color = colorMap[cat];
+    html += `
+    <details style="background:#1e293b;border:1px solid #334155;border-left:3px solid ${color};border-radius:10px;margin-bottom:10px;overflow:hidden;" open>
+      <summary style="padding:13px 18px;cursor:pointer;font-size:13px;font-weight:700;color:#f1f5f9;display:flex;align-items:center;gap:10px;list-style:none;user-select:none;">
+        <span style="background:${color};color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:800;">${c.count}</span>
+        ${cat}
+      </summary>
+      <div style="overflow-x:auto;border-top:1px solid #334155;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr>
+              <th style="background:#0f172a;padding:9px 14px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;width:130px;">Caller Number</th>
+              <th style="background:#0f172a;padding:9px 14px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Question by Partner</th>
+              <th style="background:#0f172a;padding:9px 14px;text-align:left;color:${color};font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Enhanced Verbatim (EN)</th>
+              <th style="background:#0f172a;padding:9px 14px;text-align:left;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;width:100px;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${c.rows.map(r => `
               <tr style="border-bottom:1px solid #0f172a;">
-                <td style="padding:12px 16px;color:#22c55e;font-weight:600;white-space:nowrap;">${r.phone}</td>
-                <td style="padding:12px 16px;color:#94a3b8;max-width:300px;">${r.question}</td>
-                <td style="padding:12px 16px;color:#e2e8f0;max-width:400px;">${r.verbatim}</td>
+                <td style="padding:9px 14px;color:#22c55e;font-weight:600;white-space:nowrap;">${r.phone}</td>
+                <td style="padding:9px 14px;color:#94a3b8;max-width:280px;">${r.question}</td>
+                <td style="padding:9px 14px;color:#e2e8f0;max-width:380px;">${r.verbatim}</td>
+                <td style="padding:9px 14px;color:#64748b;white-space:nowrap;">${r.date}</td>
               </tr>`).join('')}
           </tbody>
         </table>
       </div>
-    </div>
-  `;
+    </details>`;
+  });
+
+  document.getElementById('ana-output').innerHTML = html;
+
+  // ── Render chart after DOM update ──
+  if (allDates.length > 0 && results.length === total) {
+    if (analysisChart) { analysisChart.destroy(); analysisChart = null; }
+    const ctx = document.getElementById('ana-chart');
+    if (ctx) {
+      analysisChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: allDates,
+          datasets: allCats.map((cat, i) => ({
+            label: cat,
+            data: allDates.map(d => (byDateCat[d] || {})[cat] || 0),
+            backgroundColor: colorMap[cat] + 'cc',
+            borderColor: colorMap[cat],
+            borderWidth: 1,
+            borderRadius: 3
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11 }, padding: 14 } },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            x: { stacked: true, ticks: { color: '#64748b', font: { size: 11 } }, grid: { color: '#1e293b' } },
+            y: { stacked: true, ticks: { color: '#64748b', font: { size: 11 } }, grid: { color: '#1e293b' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+  }
 }
 
 // ═══════════════════════════
@@ -1895,7 +2087,7 @@ async function _doSendInbound(CHANNEL) {
       `Answered %                       | ${pad(ftd.ansPct,9)} | ${mtd.ansPct}`,
       `\`\`\``,
       ``,
-      `_:robot_face: Shamshul's Dashboard | ${new Date().toLocaleString('en-IN')}_`
+      `_:robot_face: Trust Line Dashboard | ${new Date().toLocaleString('en-IN')}_`
     ].join('\n');
 
     const res = await fetch('/api/slack', {
@@ -1923,9 +2115,11 @@ async function sendReportToSlack(opts = {}) {
   const dateIdx   = colLetterToIndex(COL_DATE);
   const statusIdx = colLetterToIndex(COL_STATUS);
   const timeIdx   = colLetterToIndex(COL_TIME);
+  const timeCIdx  = colLetterToIndex('C');
   const dateHeader   = rawHeaders[dateIdx];
   const statusHeader = rawHeaders[statusIdx];
   const timeHeader   = rawHeaders[timeIdx];
+  const timeCHeader  = rawHeaders[timeCIdx];
 
   const uniqueStatuses = [...new Set(rawData.map(r => String(r[statusHeader] || '').trim()))].filter(Boolean);
   const rocDetected  = uniqueStatuses.find(v => v.toLowerCase().includes('resolve') || v.toLowerCase().includes('roc')) || 'Resolve on Call';
@@ -1954,14 +2148,12 @@ async function sendReportToSlack(opts = {}) {
     const now = new Date();
     const openRows = rows.filter(r => String(r[statusHeader]||'').toLowerCase().includes('open'));
     const pending4h = openRows.filter(r => {
-      const d = normalizeDate(r[dateHeader]); const t = r[timeHeader];
-      if (!d || !t) return false;
-      return (now - new Date(`${d}T${t}`))/3600000 > 4;
+      const dt = parseDateTime(r[dateHeader], r[timeCHeader]);
+      return dt && (now - dt)/3600000 > 4;
     }).length;
     const pending48h = openRows.filter(r => {
-      const d = normalizeDate(r[dateHeader]); const t = r[timeHeader];
-      if (!d || !t) return false;
-      return (now - new Date(`${d}T${t}`))/3600000 > 48;
+      const dt = parseDateTime(r[dateHeader], r[timeCHeader]);
+      return dt && (now - dt)/3600000 > 48;
     }).length;
     reportRows.push({ dk, total, roc, tickets, w4, p50, p90, pending4h, pending48h });
   }
@@ -1980,12 +2172,8 @@ async function sendReportToSlack(opts = {}) {
   const mtdW4      = reportRows.reduce((s,r)=>s+r.w4,0);
   const mtdP4h     = reportRows.reduce((s,r)=>s+r.pending4h,0);
   const mtdP48h    = reportRows.reduce((s,r)=>s+r.pending48h,0);
-  const mtdAllTimes = Object.values(groups).flatMap(rows =>
-    rows.filter(r=>String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
-        .map(r=>parseTimeToHours(r[timeHeader])).filter(v=>!isNaN(v))
-  ).sort((a,b)=>a-b);
-  const mtdP50 = percentile(mtdAllTimes, 50);
-  const mtdP90 = percentile(mtdAllTimes, 90);
+  const mtdP50 = percentile(reportRows.filter(r=>!isNaN(r.p50)).map(r=>r.p50).sort((a,b)=>a-b), 50);
+  const mtdP90 = percentile(reportRows.filter(r=>!isNaN(r.p90)).map(r=>r.p90).sort((a,b)=>a-b), 90);
 
   // Inbound FTD & MTD
   let inbFtdRcvd=0, inbFtdAns=0, inbMtdRcvd=0, inbMtdAns=0;
@@ -2024,7 +2212,7 @@ async function sendReportToSlack(opts = {}) {
     `Pending > 48 hrs        | ${pad(ftd.pending48h,9)} | ${mtdP48h}`,
     `\`\`\``,
     ``,
-    `_:robot_face: Shamshul's Dashboard | ${new Date().toLocaleString('en-IN')}_`
+    `_:robot_face: Trust Line Dashboard | ${new Date().toLocaleString('en-IN')}_`
   ].join('\n');
 
   try {

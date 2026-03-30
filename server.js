@@ -45,7 +45,7 @@ app.get('/api/sheet', (req, res) => {
   fetchCsv(url, [], 5, res);
 });
 
-// Claude API — extract verbatim from question
+// Claude API — extract sub_category + verbatim from partner question
 app.post('/api/analyze', async (req, res) => {
   const { text, apiKey } = req.body;
   if (!text || !apiKey) return res.status(400).json({ error: 'Missing text or apiKey' });
@@ -60,17 +60,34 @@ app.post('/api/analyze', async (req, res) => {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 150,
+        max_tokens: 200,
         messages: [{
           role: 'user',
-          content: `You are analyzing customer/partner questions. Extract the core verbatim concern or query in 1 concise sentence. Do not add any explanation, just the verbatim.\n\nQuestion: ${text}\n\nVerbatim:`
+          content: `You are analyzing customer/partner questions in a contact center. Analyze the question and provide:
+1. sub_category: A concise 2-4 word category label in English (e.g., "Billing Query", "Delivery Issue", "Account Problem", "Technical Support", "Refund Request", "Product Info", "Order Status")
+2. verbatim: A clear enhanced verbatim of the core concern in English (1-2 sentences)
+
+Respond ONLY with valid JSON in this exact format:
+{"sub_category": "...", "verbatim": "..."}
+
+Question: ${text}`
         }]
       })
     });
 
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
-    res.json({ verbatim: data.content[0].text.trim() });
+    const rawText = data.content[0].text.trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(rawText);
+    } catch {
+      parsed = { sub_category: 'General Query', verbatim: rawText };
+    }
+    res.json({
+      verbatim: parsed.verbatim || rawText,
+      sub_category: parsed.sub_category || 'General Query'
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
