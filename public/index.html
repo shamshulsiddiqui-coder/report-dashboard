@@ -515,7 +515,7 @@ let rawData = [], rawHeaders = [];
 let countdownTimer = null, countdownValue = 30;
 let currentSheetUrl = '';
 let isLoading = false;
-let reportChart1 = null, reportChart2 = null, reportChart3 = null, analysisChart = null;
+let reportChart1 = null, reportChart2 = null, reportChart3 = null, reportChart4 = null, analysisChart = null;
 
 // Column config (fixed as per user requirement)
 const COL_DATE   = 'B';   // Column B
@@ -1143,11 +1143,7 @@ function generateReport() {
     </div>
 
     <div class="report-charts">
-      <div class="report-chart-panel">
-        <div class="panel-header"><h3>L2 Ticket vs Resolve on Call vs Within 4h</h3></div>
-        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-1"></canvas></div></div>
-      </div>
-      <div class="report-chart-panel">
+      <div class="report-chart-panel" style="grid-column:1/-1;">
         <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3></div>
         <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-2"></canvas></div></div>
       </div>
@@ -1155,21 +1151,13 @@ function generateReport() {
       <div class="report-chart-panel" style="grid-column:1/-1;">
         <div class="panel-header"><h3>Daily Inbound — Call Initiated vs Call Landed (Received)</h3></div>
         <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-3"></canvas></div></div>
+      </div>
+      <div class="report-chart-panel" style="grid-column:1/-1;">
+        <div class="panel-header"><h3>Call Not Landed — Working Hours vs Non-Working Hours</h3></div>
+        <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-4"></canvas></div></div>
       </div>` : ''}
     </div>
   `;
-
-  // Chart 1 — Volume
-  if (reportChart1) reportChart1.destroy();
-  reportChart1 = new Chart(document.getElementById('report-chart-1').getContext('2d'), {
-    type: 'bar',
-    data: { labels, datasets: [
-      { label: 'L2 Ticket', data: chartReport.map(r=>r.total), backgroundColor: 'rgba(99,102,241,0.7)', borderColor: '#6366f1', borderWidth: 1, borderRadius: 3 },
-      { label: 'Resolve on Call', data: chartReport.map(r=>r.resolveOnCall), backgroundColor: 'rgba(34,197,94,0.7)', borderColor: '#22c55e', borderWidth: 1, borderRadius: 3 },
-      { label: 'Within 4 hrs',   data: chartReport.map(r=>r.within4h), backgroundColor: 'rgba(129,140,248,0.7)', borderColor: '#818cf8', borderWidth: 1, borderRadius: 3 },
-    ]},
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
-  });
 
   // Chart 2 — P50/P90
   if (reportChart2) reportChart2.destroy();
@@ -1184,28 +1172,55 @@ function generateReport() {
 
   // Chart 3 — Daily Inbound Call Initiated vs Landed
   if (inboundData.length && document.getElementById('report-chart-3')) {
-    const dtH = inboundHeaders[3], quH = inboundHeaders[6];
-    const inbInitByDate = {}, inbLandedByDate = {};
+    const dtH = inboundHeaders[3], quH = inboundHeaders[6], dpH = inboundHeaders[10];
+    const inbInitByDate = {}, inbLandedByDate = {}, inbAnsweredByDate = {};
     inboundData.forEach(row => {
       const rawD = String(row[dtH]||'').trim(); if (!rawD) return;
       const dk = normalizeDate(rawD.split(' ')[0]); if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
       inbInitByDate[dk] = (inbInitByDate[dk]||0) + 1;
-      if (String(row[quH]||'').trim()) inbLandedByDate[dk] = (inbLandedByDate[dk]||0) + 1;
+      if (String(row[quH]||'').trim()) {
+        inbLandedByDate[dk] = (inbLandedByDate[dk]||0) + 1;
+        if (String(row[dpH]||'').trim().toUpperCase() === 'CONNECTED')
+          inbAnsweredByDate[dk] = (inbAnsweredByDate[dk]||0) + 1;
+      }
     });
-    // Use same date order as chartReport (oldest→newest), fill 0 for missing
-    const inbLabels = chartReport.map(r => r.dateDisplay);
-    const inbInitData   = chartReport.map(r => inbInitByDate[r.dateKey]   || 0);
-    const inbLandedData = chartReport.map(r => inbLandedByDate[r.dateKey] || 0);
+    const inbLabels      = chartReport.map(r => r.dateDisplay);
+    const inbInitData    = chartReport.map(r => inbInitByDate[r.dateKey]    || 0);
+    const inbLandedData  = chartReport.map(r => inbLandedByDate[r.dateKey]  || 0);
+    const inbAnsweredData= chartReport.map(r => inbAnsweredByDate[r.dateKey]|| 0);
 
     if (reportChart3) reportChart3.destroy();
     reportChart3 = new Chart(document.getElementById('report-chart-3').getContext('2d'), {
       type: 'line',
       plugins: [ChartDataLabels],
       data: { labels: inbLabels, datasets: [
-        { label: 'Call Initiated', data: inbInitData, borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.1)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: true, spanGaps: true, datalabels: { color: '#fbbf24', anchor: 'end', align: 'top', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
-        { label: 'Call Landed (Received)', data: inbLandedData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: true, spanGaps: true, datalabels: { color: '#22c55e', anchor: 'end', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+        { label: 'Call Initiated',        data: inbInitData,     borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.08)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#fbbf24', anchor: 'end', align: 'top',    font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+        { label: 'Call Received (Landed)',data: inbLandedData,   borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)',  borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#22c55e', anchor: 'end', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+        { label: 'Call Answered',         data: inbAnsweredData, borderColor: '#818cf8', backgroundColor: 'rgba(129,140,248,0.08)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#818cf8', anchor: 'start', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
       ]},
-      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20, bottom: 10 } }, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, datalabels: {} }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
+      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 24, bottom: 16 } }, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, datalabels: {} }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
+    });
+
+    // Chart 4 — Not Landed Working vs Non-Working
+    const inbNotLandedWorkByDate = {}, inbNotLandedNonWorkByDate = {};
+    inboundData.forEach(row => {
+      const rawD = String(row[dtH]||'').trim(); if (!rawD) return;
+      const dk = normalizeDate(rawD.split(' ')[0]); if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
+      if (!String(row[quH]||'').trim()) {
+        if (isWorkingHoursCall(rawD)) inbNotLandedWorkByDate[dk] = (inbNotLandedWorkByDate[dk]||0) + 1;
+        else inbNotLandedNonWorkByDate[dk] = (inbNotLandedNonWorkByDate[dk]||0) + 1;
+      }
+    });
+
+    if (reportChart4) reportChart4.destroy();
+    reportChart4 = new Chart(document.getElementById('report-chart-4').getContext('2d'), {
+      type: 'line',
+      plugins: [ChartDataLabels],
+      data: { labels: inbLabels, datasets: [
+        { label: 'Not Landed (Working Hrs)',     data: chartReport.map(r => inbNotLandedWorkByDate[r.dateKey]    || 0), borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.08)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#f87171', anchor: 'end', align: 'top',    font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+        { label: 'Not Landed (Non-Working Hrs)', data: chartReport.map(r => inbNotLandedNonWorkByDate[r.dateKey] || 0), borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,0.08)',  borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#fb923c', anchor: 'end', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+      ]},
+      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 24, bottom: 16 } }, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, datalabels: {} }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
     });
   }
 }
