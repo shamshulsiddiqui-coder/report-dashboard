@@ -946,10 +946,15 @@ function generateReport() {
   const ftdInbAns  = ftdKey ? (inbAnsByDate[ftdKey] || 0) : 0;
   const ftdInbAnsPct = ftdInbRcvd ? ((ftdInbAns/ftdInbRcvd)*100).toFixed(1)+'%' : '—';
 
-  const allP50s  = report.filter(r => !isNaN(r.p50)).map(r => r.p50).sort((a,b)=>a-b);
-  const allP90s  = report.filter(r => !isNaN(r.p90)).map(r => r.p90).sort((a,b)=>a-b);
-  const overallP50 = percentile(allP50s, 50);
-  const overallP90 = percentile(allP90s, 90);
+  // Correct: compute P50/P90 from ALL completed times across all dates
+  const allCompletedTimes = Object.values(groups)
+    .flatMap(rows => rows
+      .filter(r => String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
+      .map(r => parseTimeToHours(r[timeHeader]))
+      .filter(v => !isNaN(v))
+    ).sort((a,b) => a-b);
+  const overallP50 = percentile(allCompletedTimes, 50);
+  const overallP90 = percentile(allCompletedTimes, 90);
 
   const fmtH = v => isNaN(v) ? '—' : v.toFixed(2) + 'h';
   const pct  = (a, b) => b ? ((a/b)*100).toFixed(1) + '%' : '—';
