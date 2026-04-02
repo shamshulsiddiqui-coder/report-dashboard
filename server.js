@@ -42,7 +42,8 @@ app.get('/api/sheet', (req, res) => {
   if (!url.includes('docs.google.com/spreadsheets') && !url.includes('googleusercontent.com')) {
     return res.status(400).json({ error: 'Only Google Sheets URLs allowed' });
   }
-  fetchCsv(url, [], 5, res);
+  res.setHeader('Cache-Control', 'no-store');
+  fetchCsv(url + '&t=' + Date.now(), [], 5, res);
 });
 
 // Claude API — extract sub_category + verbatim from partner question
@@ -97,8 +98,14 @@ Question: ${text}`
 const PTL_CSV     = 'https://docs.google.com/spreadsheets/d/1lbb8ZJn0az-ueBguxwkFQ6d6pvgADGHTEWmMmy7uPSI/export?format=csv';
 const INBOUND_CSV = 'https://docs.google.com/spreadsheets/d/1lbb8ZJn0az-ueBguxwkFQ6d6pvgADGHTEWmMmy7uPSI/export?format=csv&gid=1325902355';
 
-app.get('/api/ptl-data',     (req, res) => fetchCsv(PTL_CSV,     [], 5, res));
-app.get('/api/inbound-data', (req, res) => fetchCsv(INBOUND_CSV, [], 5, res));
+app.get('/api/ptl-data',     (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  fetchCsv(PTL_CSV     + '&t=' + Date.now(), [], 5, res);
+});
+app.get('/api/inbound-data', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  fetchCsv(INBOUND_CSV + '&t=' + Date.now(), [], 5, res);
+});
 
 // Slack — list channels
 app.get('/api/slack-channels', async (req, res) => {
