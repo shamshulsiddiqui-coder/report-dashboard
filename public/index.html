@@ -276,6 +276,7 @@
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
     <button class="tab-btn" onclick="switchTab('inbound')">Inbound Call Report</button>
+    <button class="tab-btn" onclick="switchTab('mom')">📅 MOM Report</button>
   </div>
 </header>
 
@@ -471,6 +472,16 @@
 
   </div>
 
+  <!-- ══════════ MOM REPORT TAB ══════════ -->
+  <div class="tab-panel" id="tab-mom">
+    <div id="mom-output">
+      <div class="no-data-msg">
+        <h3>No data loaded</h3>
+        <p>Go to Raw Data tab and connect a Google Sheet first, then come back here.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════ INBOUND CALL REPORT TAB ══════════ -->
   <div class="tab-panel" id="tab-inbound">
     <span id="inbound-status" style="font-size:13px;color:#64748b;display:block;margin-bottom:12px;"></span>
@@ -540,9 +551,10 @@ function switchTab(name) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  const idx = { dashboard: 0, inbound: 1 }[name] ?? 0;
+  const idx = { dashboard: 0, inbound: 1, mom: 2 }[name] ?? 0;
   document.querySelectorAll('.tab-btn')[idx].classList.add('active');
   if (name === 'inbound' && !inboundData.length) loadInboundSheet();
+  if (name === 'mom') generateMomReport();
 }
 
 function switchSubTab(name) {
@@ -820,6 +832,168 @@ function percentile(sorted, p) {
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
 }
 
+// ── MOM REPORT ──
+function generateMomReport() {
+  const el = document.getElementById('mom-output');
+  if (!rawData.length) {
+    el.innerHTML = `<div class="no-data-msg"><h3>No data loaded</h3><p>Go to Raw Data tab and connect a Google Sheet first, then come back here.</p></div>`;
+    return;
+  }
+
+  const dateIdx   = colLetterToIndex(COL_DATE);
+  const statusIdx = colLetterToIndex(COL_STATUS);
+  const timeIdx   = colLetterToIndex(COL_TIME);
+  const timeCIdx  = colLetterToIndex('C');
+  const dateHeader   = rawHeaders[dateIdx];
+  const statusHeader = rawHeaders[statusIdx];
+  const timeHeader   = rawHeaders[timeIdx];
+  const timeCHeader  = rawHeaders[timeCIdx];
+
+  const uniqueStatuses = [...new Set(rawData.map(r => String(r[statusHeader]||'').trim()))].filter(Boolean);
+  const rocDetected  = uniqueStatuses.find(v => v.toLowerCase().includes('resolve') || v.toLowerCase().includes('roc')) || 'Resolve on Call';
+  const compDetected = uniqueStatuses.find(v => v.toLowerCase().includes('complet')) || 'Completed';
+
+  const today     = new Date();
+  const d1Date    = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1); // D-1
+  const curDay    = d1Date.getDate();
+  const curYear   = d1Date.getFullYear();
+  const curMonth  = d1Date.getMonth() + 1;
+  const lastMonthDate = new Date(d1Date.getFullYear(), d1Date.getMonth() - 1, curDay);
+  const lastYear  = lastMonthDate.getFullYear();
+  const lastMonth = lastMonthDate.getMonth() + 1;
+  const lastDay   = lastMonthDate.getDate();
+  // Exact date keys — D-1 this month vs D-1 last month
+  const curDateKey  = `${curYear}-${String(curMonth).padStart(2,'0')}-${String(curDay).padStart(2,'0')}`;
+  const lastDateKey = `${lastYear}-${String(lastMonth).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+
+  function calcPtl(rows) {
+    const total = rows.length;
+    const resolveOnCall = rows.filter(r => String(r[statusHeader]||'').toLowerCase().includes(rocDetected.toLowerCase().slice(0,6))).length;
+    const within4h = rows.filter(r => {
+      const t = parseTimeToHours(r[timeHeader]);
+      const done = String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6));
+      return done && !isNaN(t) && t <= 4;
+    }).length;
+    const completedTimes = rows
+      .filter(r => String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
+      .map(r => parseTimeToHours(r[timeHeader])).filter(v=>!isNaN(v)).sort((a,b)=>a-b);
+    const p50 = percentile(completedTimes, 50);
+    const p90 = percentile(completedTimes, 90);
+    const l2 = total - resolveOnCall;
+    const rocPct = total ? (resolveOnCall/total*100) : NaN;
+    const w4hPct = l2 ? (within4h/l2*100) : NaN;
+    const now = new Date();
+    const openRows = rows.filter(r => String(r[statusHeader]||'').toLowerCase().includes('open'));
+    const pending4h  = openRows.filter(r => { const dt=parseDateTime(r[dateHeader],r[timeCHeader]); return dt&&(now-dt)/3600000>4; }).length;
+    const pending48h = openRows.filter(r => { const dt=parseDateTime(r[dateHeader],r[timeCHeader]); return dt&&(now-dt)/3600000>48; }).length;
+    return { total, resolveOnCall, rocPct, l2, within4h, w4hPct, p50, p90, pending4h, pending48h };
+  }
+
+  const curRows  = rawData.filter(r => normalizeDate(r[dateHeader]) === curDateKey);
+  const lastRows = rawData.filter(r => normalizeDate(r[dateHeader]) === lastDateKey);
+  const cur  = calcPtl(curRows);
+  const last = calcPtl(lastRows);
+
+  let curInbRcvd=0,curInbAns=0,lastInbRcvd=0,lastInbAns=0;
+  if (inboundData.length) {
+    const dtH=inboundHeaders[3],quH=inboundHeaders[6],dpH=inboundHeaders[10];
+    inboundData.forEach(row => {
+      const rawD=String(row[dtH]||'').trim(); if(!rawD) return;
+      const dk=normalizeDate(rawD.split(' ')[0]); if(!dk) return;
+      const qu=String(row[quH]||'').trim(), dp=String(row[dpH]||'').trim().toUpperCase();
+      if(!qu) return;
+      if(dk === curDateKey)  { curInbRcvd++;  if(dp==='CONNECTED') curInbAns++;  }
+      if(dk === lastDateKey) { lastInbRcvd++; if(dp==='CONNECTED') lastInbAns++; }
+    });
+  }
+
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const lastDateName = `${String(lastDay).padStart(2,'0')} ${months[lastMonth-1]} ${lastYear}`;
+  const curDateName  = `${String(curDay).padStart(2,'0')} ${months[curMonth-1]} ${curYear}`;
+
+  const fmtH   = v => isNaN(v)||v===undefined ? '—' : v.toFixed(2)+'h';
+  const fmtPct = v => isNaN(v)||v===undefined ? '—' : v.toFixed(1)+'%';
+  const fmtN   = v => (v===undefined||v===null||isNaN(v)) ? '—' : v;
+
+  function delta(curV, lastV, lowerBetter=false) {
+    if(isNaN(curV)||isNaN(lastV)||lastV===0) return '<span style="color:#64748b;">—</span>';
+    const diff = curV - lastV;
+    if(diff===0) return '<span style="color:#64748b;">±0%</span>';
+    const pctChg = Math.abs(diff/lastV*100).toFixed(1);
+    const isGood = lowerBetter ? diff<0 : diff>0;
+    const arrow  = diff>0 ? '▲' : '▼';
+    const sign   = diff>0 ? '+' : '';
+    const color  = isGood ? '#22c55e' : '#ef4444';
+    return `<span style="color:${color};font-weight:700;">${arrow} ${sign}${pctChg}%</span>`;
+  }
+
+  const allRows = [
+    ...(inboundData.length ? [
+      { label:'Total Call Received', lastV:fmtN(lastInbRcvd), curV:fmtN(curInbRcvd), chg:delta(curInbRcvd,lastInbRcvd,false), section:'📞 Inbound Call' },
+      { label:'Total Call Answered', lastV:fmtN(lastInbAns),  curV:fmtN(curInbAns),  chg:delta(curInbAns,lastInbAns,false) },
+      { label:'Answered %',
+        lastV:fmtPct(lastInbRcvd?lastInbAns/lastInbRcvd*100:NaN),
+        curV :fmtPct(curInbRcvd ?curInbAns /curInbRcvd *100:NaN),
+        chg  :delta(curInbRcvd?curInbAns/curInbRcvd*100:NaN, lastInbRcvd?lastInbAns/lastInbRcvd*100:NaN, false) },
+    ] : []),
+    { label:'Total Tickets Created', lastV:fmtN(last.total),        curV:fmtN(cur.total),        chg:delta(cur.total,last.total,false),                   section:'📋 PTL' },
+    { label:'Resolve on Call (ROC)', lastV:fmtN(last.resolveOnCall), curV:fmtN(cur.resolveOnCall), chg:delta(cur.resolveOnCall,last.resolveOnCall,false) },
+    { label:'ROC %',                 lastV:fmtPct(last.rocPct),     curV:fmtPct(cur.rocPct),     chg:delta(cur.rocPct,last.rocPct,false) },
+    { label:'L2 Tickets',            lastV:fmtN(last.l2),           curV:fmtN(cur.l2),           chg:delta(cur.l2,last.l2,true) },
+    { label:'Within 4 hrs',          lastV:fmtN(last.within4h),     curV:fmtN(cur.within4h),     chg:delta(cur.within4h,last.within4h,false) },
+    { label:'W4h %',                 lastV:fmtPct(last.w4hPct),     curV:fmtPct(cur.w4hPct),     chg:delta(cur.w4hPct,last.w4hPct,false) },
+    { label:'P50 Resolution',        lastV:fmtH(last.p50),          curV:fmtH(cur.p50),          chg:delta(cur.p50,last.p50,true) },
+    { label:'P90 Resolution',        lastV:fmtH(last.p90),          curV:fmtH(cur.p90),          chg:delta(cur.p90,last.p90,true) },
+    { label:'Pending > 4 hrs',       lastV:fmtN(last.pending4h),    curV:fmtN(cur.pending4h),    chg:delta(cur.pending4h,last.pending4h,true) },
+    { label:'Pending > 48 hrs',      lastV:fmtN(last.pending48h),   curV:fmtN(cur.pending48h),   chg:delta(cur.pending48h,last.pending48h,true) },
+  ];
+
+  function makeTableRows(rows) {
+    return rows.map(r => `
+      ${r.section ? `<tr><td colspan="4" style="padding:5px 16px;background:#0f172a;color:#64748b;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;border-top:2px solid #334155;">${r.section}</td></tr>` : ''}
+      <tr>
+        <td style="padding:11px 16px;color:#e2e8f0;border-bottom:1px solid #1e293b;">${r.label}</td>
+        <td style="padding:11px 16px;text-align:right;color:#94a3b8;border-bottom:1px solid #1e293b;">${r.lastV}</td>
+        <td style="padding:11px 16px;text-align:right;color:#f1f5f9;font-weight:600;border-bottom:1px solid #1e293b;">${r.curV}</td>
+        <td style="padding:11px 16px;text-align:center;border-bottom:1px solid #1e293b;">${r.chg}</td>
+      </tr>`).join('');
+  }
+
+  function makeTableHead() {
+    return `<thead><tr>
+      <th style="padding:10px 16px;text-align:left;background:#0f172a;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Metric</th>
+      <th style="padding:10px 16px;text-align:right;background:#0f172a;color:#94a3b8;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${lastDateName}</th>
+      <th style="padding:10px 16px;text-align:right;background:#0f172a;color:#22c55e;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">${curDateName}</th>
+      <th style="padding:10px 16px;text-align:center;background:#0f172a;color:#64748b;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Change</th>
+    </tr></thead>`;
+  }
+
+  el.innerHTML = `
+    <div style="margin-bottom:20px;">
+      <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:4px;">Month Over Month Report</h2>
+      <p style="font-size:13px;color:#64748b;">
+        Comparing <b style="color:#fbbf24;">${lastDateName}</b>
+        vs <b style="color:#22c55e;">${curDateName}</b>
+      </p>
+    </div>
+
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;">
+      <div style="padding:14px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:14px;font-weight:700;color:#f1f5f9;">📋 PTL + Inbound Metrics</span>
+        <span style="font-size:11px;color:#64748b;background:#0f172a;padding:2px 10px;border-radius:20px;">
+          ${lastRows.length} tickets on ${lastDateName} &nbsp;·&nbsp; ${curRows.length} tickets on ${curDateName}
+        </span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          ${makeTableHead()}
+          <tbody>${makeTableRows(allRows)}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 // ── GENERATE REPORT ──
 function generateReport() {
   if (!rawData.length) {
@@ -934,6 +1108,38 @@ function generateReport() {
   const sumP4h      = report.reduce((s, r) => s + r.pending4h, 0);
   const sumP48h     = report.reduce((s, r) => s + r.pending48h, 0);
 
+  // Month-wise Grand Totals
+  const _today = new Date();
+  const _curMKey  = `${_today.getFullYear()}-${String(_today.getMonth()+1).padStart(2,'0')}`;
+  const _lastMD   = new Date(_today.getFullYear(), _today.getMonth()-1, 1);
+  const _lastMKey = `${_lastMD.getFullYear()}-${String(_lastMD.getMonth()+1).padStart(2,'0')}`;
+  const _mNames   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const _curMName  = _mNames[_today.getMonth()];
+  const _lastMName = _mNames[_lastMD.getMonth()];
+  const _curMRep   = report.filter(r => r.dateKey.startsWith(_curMKey));
+  const _lastMRep  = report.filter(r => r.dateKey.startsWith(_lastMKey));
+  const mSum = rows => ({
+    total:   rows.reduce((s,r)=>s+r.total,0),
+    roc:     rows.reduce((s,r)=>s+r.resolveOnCall,0),
+    w4:      rows.reduce((s,r)=>s+r.within4h,0),
+    p4h:     rows.reduce((s,r)=>s+r.pending4h,0),
+    p48h:    rows.reduce((s,r)=>s+r.pending48h,0),
+  });
+  const _curM  = mSum(_curMRep);
+  const _lastM = mSum(_lastMRep);
+  _curM.tickets  = _curM.total  - _curM.roc;
+  _lastM.tickets = _lastM.total - _lastM.roc;
+  const _getCompTimes = mk => Object.entries(groups)
+    .filter(([dk])=>dk.startsWith(mk))
+    .flatMap(([,rows])=>rows
+      .filter(r=>String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6)))
+      .map(r=>parseTimeToHours(r[timeHeader])).filter(v=>!isNaN(v))
+    ).sort((a,b)=>a-b);
+  _curM.p50  = percentile(_getCompTimes(_curMKey),  50);
+  _curM.p90  = percentile(_getCompTimes(_curMKey),  90);
+  _lastM.p50 = percentile(_getCompTimes(_lastMKey), 50);
+  _lastM.p90 = percentile(_getCompTimes(_lastMKey), 90);
+
   // Inbound totals for cards
   let grandInbRcvd = 0, grandInbAns = 0, inbByDate = {}, inbAnsByDate = {};
   if (inboundData.length) {
@@ -946,6 +1152,11 @@ function generateReport() {
     });
   }
   const grandInbAnsPct = grandInbRcvd ? ((grandInbAns/grandInbRcvd)*100).toFixed(1)+'%' : '—';
+  let _curInbRcvd=0,_curInbAns=0,_lastInbRcvd=0,_lastInbAns=0;
+  Object.entries(inbByDate).forEach(([dk,cnt])=>{
+    if(dk.startsWith(_curMKey))  { _curInbRcvd  +=cnt; _curInbAns  +=(inbAnsByDate[dk]||0); }
+    if(dk.startsWith(_lastMKey)) { _lastInbRcvd +=cnt; _lastInbAns +=(inbAnsByDate[dk]||0); }
+  });
   const ftdInbRcvd = ftdKey ? (inbByDate[ftdKey] || 0) : 0;
   const ftdInbAns  = ftdKey ? (inbAnsByDate[ftdKey] || 0) : 0;
   const ftdInbAnsPct = ftdInbRcvd ? ((ftdInbAns/ftdInbRcvd)*100).toFixed(1)+'%' : '—';
@@ -1071,7 +1282,9 @@ function generateReport() {
           <thead>
             <tr>
               <th style="min-width:180px;position:sticky;left:0;z-index:3;background:#0f172a;">Metric</th>
-              <th style="text-align:right" class="td-total">Total</th>
+              <th style="text-align:right;position:sticky;left:180px;z-index:3;background:#0f172a;white-space:nowrap;" class="td-total">Total</th>
+              <th style="text-align:right;position:sticky;left:246px;z-index:3;background:#0a1020;color:#22c55e;white-space:nowrap;">${_curMName} Total</th>
+              <th style="text-align:right;position:sticky;left:326px;z-index:3;background:#0a1020;color:#fbbf24;white-space:nowrap;">${_lastMName} Total</th>
               ${report.map(r => `<th style="text-align:right">${r.dateDisplay}</th>`).join('')}
             </tr>
           </thead>
@@ -1079,62 +1292,86 @@ function generateReport() {
             ${inboundData.length ? `
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
-                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${grandInbRcvd}</td>
+                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;position:sticky;left:180px;z-index:1;">${grandInbRcvd}</td>
+                  <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;position:sticky;left:246px;z-index:1;">${_curInbRcvd}</td>
+                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;position:sticky;left:326px;z-index:1;">${_lastInbRcvd}</td>
                   ${report.map(r=>`<td style="text-align:right;color:#fbbf24;">${inbByDate[r.dateKey]||0}</td>`).join('')}
                 </tr>
                 <tr>
                   <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#818cf8;">Answered %</td>
-                  <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${grandInbAnsPct}</td>
+                  <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;position:sticky;left:180px;z-index:1;">${grandInbAnsPct}</td>
+                  <td style="text-align:right;font-weight:700;color:#22c55e;background:#1a2744;position:sticky;left:246px;z-index:1;">${_curInbRcvd?(((_curInbAns/_curInbRcvd)*100).toFixed(1)+'%'):'—'}</td>
+                  <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;position:sticky;left:326px;z-index:1;">${_lastInbRcvd?(((_lastInbAns/_lastInbRcvd)*100).toFixed(1)+'%'):'—'}</td>
                   ${report.map(r=>`<td style="text-align:right;color:#818cf8;">${inbByDate[r.dateKey]?(((inbAnsByDate[r.dateKey]||0)/inbByDate[r.dateKey])*100).toFixed(1)+'%':'—'}</td>`).join('')}
                 </tr>` : `<tr><td class="td-date" colspan="${report.length+2}" style="color:#64748b;font-style:italic;padding:10px 16px;">📞 Inbound data loading...</td></tr>`}
             <tr data-ptlmetric="Total Ticket Created">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Total Ticket Created</td>
-              <td class="td-num td-total">${sumTotal}</td>
+              <td class="td-num td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${sumTotal}</td>
+              <td class="td-num td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${_curM.total}</td>
+              <td class="td-num td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${_lastM.total}</td>
               ${report.map(r => `<td class="td-num">${r.total}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="Resolve on Call">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Resolve on Call</td>
-              <td class="td-green td-total">${sumROC}</td>
+              <td class="td-green td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${sumROC}</td>
+              <td class="td-green td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${_curM.roc}</td>
+              <td class="td-green td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${_lastM.roc}</td>
               ${report.map(r => `<td class="td-green">${r.resolveOnCall}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="ROC %">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">ROC %</td>
-              <td class="td-green td-total">${pct(sumROC,sumTotal)}</td>
+              <td class="td-green td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${pct(sumROC,sumTotal)}</td>
+              <td class="td-green td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${pct(_curM.roc,_curM.total)}</td>
+              <td class="td-green td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${pct(_lastM.roc,_lastM.total)}</td>
               ${report.map(r => `<td class="td-green">${pct(r.resolveOnCall, r.total)}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="L2 Ticket">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">L2 Ticket</td>
-              <td class="td-num td-total">${sumTickets}</td>
+              <td class="td-num td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${sumTickets}</td>
+              <td class="td-num td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${_curM.tickets}</td>
+              <td class="td-num td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${_lastM.tickets}</td>
               ${report.map(r => `<td class="td-num">${r.ticketsCreated}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="Within 4 hrs">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Within 4 hrs</td>
-              <td class="td-blue td-total">${sumW4}</td>
+              <td class="td-blue td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${sumW4}</td>
+              <td class="td-blue td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${_curM.w4}</td>
+              <td class="td-blue td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${_lastM.w4}</td>
               ${report.map(r => `<td class="td-blue">${r.within4h}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="W4h %">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">W4h %</td>
-              <td class="td-blue td-total">${pct(sumW4,sumTickets)}</td>
+              <td class="td-blue td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${pct(sumW4,sumTickets)}</td>
+              <td class="td-blue td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${pct(_curM.w4,_curM.tickets)}</td>
+              <td class="td-blue td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${pct(_lastM.w4,_lastM.tickets)}</td>
               ${report.map(r => `<td class="td-blue">${pct(r.within4h, r.ticketsCreated)}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="P50 (hrs)">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">P50 (hrs)</td>
-              <td class="td-yellow td-total">${fmtH(overallP50)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${fmtH(overallP50)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${fmtH(_curM.p50)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${fmtH(_lastM.p50)}</td>
               ${report.map(r => `<td class="td-yellow">${fmtH(r.p50)}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="P90 (hrs)">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">P90 (hrs)</td>
-              <td class="td-yellow td-total">${fmtH(overallP90)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:180px;z-index:1;background:#1a2744;">${fmtH(overallP90)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:246px;z-index:1;background:#1a2744;color:#22c55e;">${fmtH(_curM.p90)}</td>
+              <td class="td-yellow td-total" style="position:sticky;left:326px;z-index:1;background:#1a2744;color:#fbbf24;">${fmtH(_lastM.p90)}</td>
               ${report.map(r => `<td class="td-yellow">${fmtH(r.p90)}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="Ticket Pending > 4 Hours">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Ticket Pending &gt; 4 Hours</td>
-              <td style="text-align:right;color:#fb923c;background:#1a2744;font-weight:700">${sumP4h}</td>
+              <td style="text-align:right;color:#fb923c;background:#1a2744;font-weight:700;position:sticky;left:180px;z-index:1;">${sumP4h}</td>
+              <td style="text-align:right;color:#22c55e;background:#1a2744;font-weight:700;position:sticky;left:246px;z-index:1;">${_curM.p4h}</td>
+              <td style="text-align:right;color:#fbbf24;background:#1a2744;font-weight:700;position:sticky;left:326px;z-index:1;">${_lastM.p4h}</td>
               ${report.map(r => `<td style="text-align:right;color:#fb923c">${r.pending4h}</td>`).join('')}
             </tr>
             <tr data-ptlmetric="Ticket Pending > 48 Hours">
               <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;">Ticket Pending &gt; 48 Hours</td>
-              <td style="text-align:right;color:#f87171;background:#1a2744;font-weight:700">${sumP48h}</td>
+              <td style="text-align:right;color:#f87171;background:#1a2744;font-weight:700;position:sticky;left:180px;z-index:1;">${sumP48h}</td>
+              <td style="text-align:right;color:#22c55e;background:#1a2744;font-weight:700;position:sticky;left:246px;z-index:1;">${_curM.p48h}</td>
+              <td style="text-align:right;color:#fbbf24;background:#1a2744;font-weight:700;position:sticky;left:326px;z-index:1;">${_lastM.p48h}</td>
               ${report.map(r => `<td style="text-align:right;color:#f87171">${r.pending48h}</td>`).join('')}
             </tr>
           </tbody>
