@@ -272,6 +272,7 @@
     </select>
     <span id="countdown-badge">Next refresh: <span id="countdown">--</span>s</span>
   </div>
+  <button id="deploy-btn" onclick="deployToRailway()" style="padding:6px 14px;border-radius:8px;border:1px solid #22c55e;background:#16a34a;color:#fff;font-size:13px;cursor:pointer;font-weight:600;">🚀 Deploy</button>
   <button id="theme-toggle" onclick="toggleTheme()" style="padding:6px 14px;border-radius:8px;border:1px solid #78350f;background:transparent;color:#fbbf24;font-size:13px;cursor:pointer;">🌙 Dark</button>
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
@@ -534,6 +535,36 @@ const COL_STATUS = 'CI';  // Column CI (Sub Status)
 const COL_TIME   = 'T';   // Column T
 
 // ── TAB SWITCH ──
+async function deployToRailway() {
+  const btn = document.getElementById('deploy-btn');
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Deploying...';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  try {
+    const res = await fetch('/api/deploy', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = '✅ Deployed!';
+      btn.style.background = '#16a34a';
+    } else {
+      btn.textContent = '❌ Failed';
+      btn.style.background = '#dc2626';
+      alert('Deploy failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (err) {
+    btn.textContent = '❌ Error';
+    btn.style.background = '#dc2626';
+    alert('Deploy error: ' + err.message);
+  }
+  setTimeout(() => {
+    btn.textContent = origText;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.background = '#16a34a';
+  }, 5000);
+}
+
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   const btn = document.getElementById('theme-toggle');

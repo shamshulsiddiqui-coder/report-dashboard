@@ -180,6 +180,28 @@ app.post('/api/slack-upload', async (req, res) => {
   }
 });
 
+// Deploy — trigger Railway redeploy from latest GitHub commit
+app.post('/api/deploy', async (req, res) => {
+  const token = process.env.RAILWAY_DEPLOY_TOKEN;
+  const serviceId = process.env.RAILWAY_SERVICE_ID;
+  const envId = process.env.RAILWAY_ENV_ID;
+  if (!token || !serviceId || !envId) return res.status(500).json({ error: 'Railway deploy config missing' });
+  try {
+    const response = await fetch('https://backboard.railway.com/graphql/v2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        query: `mutation { serviceInstanceDeploy(serviceId: "${serviceId}", environmentId: "${envId}") }`
+      })
+    });
+    const data = await response.json();
+    if (data.errors) return res.status(400).json({ error: data.errors[0].message });
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Dashboard running at http://localhost:${PORT}`);
 });
