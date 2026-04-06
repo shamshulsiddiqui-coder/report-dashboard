@@ -222,6 +222,52 @@
     /* Report charts */
     .report-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
     @media (max-width: 900px) { .report-charts { grid-template-columns: 1fr; } }
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header {
+        flex-wrap: wrap; padding: 10px 12px; gap: 8px;
+      }
+      header h1 { font-size: 14px; margin-right: 0; width: 100%; text-align: center; }
+      .slogan { font-size: 10px; display: none; }
+      .refresh-controls { display: none !important; }
+      #deploy-btn, #theme-toggle { font-size: 11px; padding: 4px 8px; }
+      .tabs { width: 100%; overflow-x: auto; gap: 4px; flex-wrap: nowrap; justify-content: flex-start; }
+      .tab-btn { font-size: 11px; padding: 6px 10px; white-space: nowrap; flex-shrink: 0; }
+      .main { padding: 10px; }
+      .summary-cards, .report-summary { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
+      .summary-card, .card { padding: 8px !important; min-width: unset !important; }
+      .card .card-label, .s-label { font-size: 9px !important; }
+      .card .card-value, .s-value { font-size: 16px !important; }
+      .report-table { font-size: 11px; }
+      .report-table thead th { padding: 8px 6px; font-size: 9px; }
+      .report-table tbody td { padding: 6px; font-size: 11px; }
+      .report-table .td-date { font-size: 10px; min-width: 100px; }
+      .report-table-wrap { max-height: 60vh; }
+      .report-chart-wrap { height: 200px; }
+      .panel, .report-table-panel, .report-chart-panel, .full-panel { margin-bottom: 12px; }
+      .panel-header { padding: 10px 12px !important; }
+      .panel-header h3 { font-size: 12px !important; }
+      .connect-bar { flex-wrap: wrap; }
+      .connect-bar input[type="text"], #sheet-url { width: 100% !important; font-size: 12px !important; }
+      .report-config { flex-wrap: wrap !important; gap: 8px !important; }
+      .config-item input, .config-item select { font-size: 12px !important; }
+      .sn-btn { font-size: 11px; padding: 5px 10px; }
+      h2 { font-size: 16px !important; }
+      .report-top { flex-wrap: wrap; gap: 8px; }
+      .report-top button { font-size: 11px !important; padding: 6px 10px !important; }
+    }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 13px; }
+      .tabs { gap: 3px; }
+      .tab-btn { font-size: 10px; padding: 5px 8px; }
+      .summary-cards, .report-summary { grid-template-columns: repeat(2, 1fr) !important; }
+      .card .card-value, .s-value { font-size: 14px !important; }
+      .report-table { font-size: 10px; }
+      .report-table thead th { font-size: 8px; padding: 6px 4px; }
+      .report-table tbody td { padding: 5px 4px; font-size: 10px; }
+    }
     .report-chart-panel { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
     .report-chart-panel .panel-header { padding: 14px 18px; border-bottom: 1px solid #334155; }
     .report-chart-panel .panel-header h3 { font-size: 13px; font-weight: 600; color: #f1f5f9; }
@@ -275,7 +321,7 @@
   <button id="deploy-btn" onclick="deployToRailway()" style="padding:6px 14px;border-radius:8px;border:1px solid #22c55e;background:#16a34a;color:#fff;font-size:13px;cursor:pointer;font-weight:600;">🚀 Deploy</button>
   <button id="theme-toggle" onclick="toggleTheme()" style="padding:6px 14px;border-radius:8px;border:1px solid #78350f;background:transparent;color:#fbbf24;font-size:13px;cursor:pointer;">🌙 Dark</button>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
+    <button class="tab-btn active" onclick="switchTab('dashboard')">L3 Report</button>
     <button class="tab-btn" onclick="switchTab('inbound')">Inbound Call Report</button>
     <button class="tab-btn" onclick="switchTab('mom')">📅 MOM Report</button>
   </div>
@@ -347,7 +393,7 @@
 
       <div class="panel" id="raw-table-panel" style="display:none">
         <div class="panel-header">
-          <h3>Raw Data</h3>
+          <h3>L3 Report</h3>
           <span style="font-size:12px;color:#64748b" id="row-count"></span>
         </div>
         <div class="table-wrap" id="raw-table"></div>
@@ -366,13 +412,9 @@
       <div class="report-top" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <h2>PTL Management Report</h2>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <button id="btn-send-ptl" onclick="sendToTrustLineTeam()" style="padding:10px 22px;background:#4A154B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+          <button id="btn-slack-publish" onclick="slackPublish()" style="padding:10px 22px;background:#4A154B;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
-            Send PTL Report
-          </button>
-          <button id="btn-send-inbound" onclick="sendInboundToTrustLine()" style="padding:10px 22px;background:#0f7b6c;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg>
-            Send Inbound Report
+            Slack Publish
           </button>
         </div>
       </div>
@@ -478,7 +520,7 @@
     <div id="mom-output">
       <div class="no-data-msg">
         <h3>No data loaded</h3>
-        <p>Go to Raw Data tab and connect a Google Sheet first, then come back here.</p>
+        <p>Go to L3 Report tab and connect a Google Sheet first, then come back here.</p>
       </div>
     </div>
   </div>
@@ -489,8 +531,8 @@
 
     <!-- Sub-nav (shown after data loads) -->
     <div id="inbound-sub-nav" style="display:none;gap:8px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid #334155;padding-bottom:12px;">
-      <button id="isnbtn-rawview" class="sn-btn sn-active" onclick="switchInboundSubTab('rawview')">📋 Raw View</button>
-      <button id="isnbtn-agentwise" class="sn-btn" onclick="switchInboundSubTab('agentwise')">👤 Agent Wise Report</button>
+      <button id="isnbtn-rawview" class="sn-btn" onclick="switchInboundSubTab('rawview')">📋 Raw View</button>
+      <button id="isnbtn-agentwise" class="sn-btn sn-active" onclick="switchInboundSubTab('agentwise')">👤 Agent Wise Report</button>
     </div>
 
     <!-- Raw View -->
@@ -528,6 +570,59 @@ let countdownTimer = null, countdownValue = 30;
 let currentSheetUrl = '';
 let isLoading = false;
 let reportChart1 = null, reportChart2 = null, reportChart3 = null, reportChart4 = null, analysisChart = null;
+let _chartReport = [];
+let _inbInitByDate = {}, _inbLandedByDate = {}, _inbAnsweredByDate = {};
+let _inbNotLandedWorkByDate = {}, _inbNotLandedNonWorkByDate = {};
+let chartMonthSel = { c2: 'all', c3: 'all', c4: 'all' };
+
+function selectChartMonth(chartKey, mk) {
+  chartMonthSel[chartKey] = mk;
+  const filtered = (mk === 'all' ? _chartReport : _chartReport.filter(r => r.dateKey.startsWith(mk)))
+    .slice().sort((a,b) => b.dateKey > a.dateKey ? 1 : -1);
+
+  if (chartKey === 'c2') {
+    if (reportChart2) reportChart2.destroy();
+    reportChart2 = new Chart(document.getElementById('report-chart-2').getContext('2d'), {
+      type: 'line',
+      data: { labels: filtered.map(r=>r.dateDisplay), datasets: [
+        { label:'P50 (hrs)', data:filtered.map(r=>isNaN(r.p50)?null:+r.p50.toFixed(2)), borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.1)', borderWidth:2, pointRadius:4, tension:0.3, spanGaps:true },
+        { label:'P90 (hrs)', data:filtered.map(r=>isNaN(r.p90)?null:+r.p90.toFixed(2)), borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.1)', borderWidth:2, pointRadius:4, tension:0.3, spanGaps:true },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}}}, scales:{x:{ticks:{color:'#64748b',maxRotation:45,font:{size:10}},grid:{color:'#1e293b'}},y:{ticks:{color:'#64748b'},grid:{color:'#334155'}}} }
+    });
+  } else if (chartKey === 'c3') {
+    if (reportChart3) reportChart3.destroy();
+    reportChart3 = new Chart(document.getElementById('report-chart-3').getContext('2d'), {
+      type:'line', plugins:[ChartDataLabels],
+      data:{ labels:filtered.map(r=>r.dateDisplay), datasets:[
+        { label:'Call Initiated',         data:filtered.map(r=>_inbInitByDate[r.dateKey]||0),     borderColor:'#fbbf24', backgroundColor:'rgba(251,191,36,0.08)', borderWidth:2, pointRadius:5, tension:0.3, fill:false, spanGaps:true, datalabels:{color:'#fbbf24',anchor:'end',align:'top',   font:{size:10,weight:'600'},formatter:v=>v||''} },
+        { label:'Call Received (Landed)', data:filtered.map(r=>_inbLandedByDate[r.dateKey]||0),   borderColor:'#22c55e', backgroundColor:'rgba(34,197,94,0.08)',  borderWidth:2, pointRadius:5, tension:0.3, fill:false, spanGaps:true, datalabels:{color:'#22c55e',anchor:'end',align:'bottom',font:{size:10,weight:'600'},formatter:v=>v||''} },
+        { label:'Call Answered',          data:filtered.map(r=>_inbAnsweredByDate[r.dateKey]||0), borderColor:'#818cf8', backgroundColor:'rgba(129,140,248,0.08)', borderWidth:2, pointRadius:5, tension:0.3, fill:false, spanGaps:true, datalabels:{color:'#818cf8',anchor:'start',align:'bottom',font:{size:10,weight:'600'},formatter:v=>v||''} },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:24,bottom:16}}, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},datalabels:{}}, scales:{x:{ticks:{color:'#64748b',maxRotation:45,font:{size:10}},grid:{color:'#1e293b'}},y:{ticks:{color:'#64748b'},grid:{color:'#334155'}}} }
+    });
+  } else if (chartKey === 'c4') {
+    if (reportChart4) reportChart4.destroy();
+    reportChart4 = new Chart(document.getElementById('report-chart-4').getContext('2d'), {
+      type:'line', plugins:[ChartDataLabels],
+      data:{ labels:filtered.map(r=>r.dateDisplay), datasets:[
+        { label:'Not Landed (Working Hrs)',     data:filtered.map(r=>_inbNotLandedWorkByDate[r.dateKey]||0),    borderColor:'#f87171', backgroundColor:'rgba(248,113,113,0.08)', borderWidth:2, pointRadius:5, tension:0.3, fill:false, spanGaps:true, datalabels:{color:'#f87171',anchor:'end',align:'top',   font:{size:10,weight:'600'},formatter:v=>v||''} },
+        { label:'Not Landed (Non-Working Hrs)', data:filtered.map(r=>_inbNotLandedNonWorkByDate[r.dateKey]||0), borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.08)',  borderWidth:2, pointRadius:5, tension:0.3, fill:false, spanGaps:true, datalabels:{color:'#60a5fa',anchor:'end',align:'bottom',font:{size:10,weight:'600'},formatter:v=>v||''} },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, layout:{padding:{top:24,bottom:16}}, plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},datalabels:{}}, scales:{x:{ticks:{color:'#64748b',maxRotation:45,font:{size:10}},grid:{color:'#1e293b'}},y:{ticks:{color:'#64748b'},grid:{color:'#334155'}}} }
+    });
+  }
+
+  // Refresh buttons to update active state
+  const months = [...new Set(_chartReport.map(r => r.dateKey.slice(0,7)))].sort();
+  const el = document.getElementById(`chart${chartKey.slice(1)}-filter`);
+  if (!el) return;
+  const btnStyle = (active) => `padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${active?'#6366f1':'#334155'};background:${active?'#6366f1':'transparent'};color:${active?'#fff':'#94a3b8'};`;
+  el.innerHTML = ['all', ...months].map(m => {
+    const label = m === 'all' ? 'All' : new Date(m+'-01').toLocaleString('en-IN',{month:'short',year:'2-digit'});
+    return `<button style="${btnStyle(chartMonthSel[chartKey]===m)}" onclick="selectChartMonth('${chartKey}','${m}')">${label}</button>`;
+  }).join(' ');
+}
 
 // Column config (fixed as per user requirement)
 const COL_DATE   = 'B';   // Column B
@@ -585,7 +680,8 @@ function switchTab(name) {
   const idx = { dashboard: 0, inbound: 1, mom: 2 }[name] ?? 0;
   document.querySelectorAll('.tab-btn')[idx].classList.add('active');
   if (name === 'inbound' && !inboundData.length) loadInboundSheet();
-  if (name === 'mom') generateMomReport();
+  if (name === 'inbound') switchInboundSubTab('agentwise');
+  if (name === 'mom') { momOffsetDays = 0; generateMomReport(); }
 }
 
 function switchSubTab(name) {
@@ -864,10 +960,11 @@ function percentile(sorted, p) {
 }
 
 // ── MOM REPORT ──
-function generateMomReport() {
-  const el = document.getElementById('mom-output');
+function generateMomReport(targetId, prefix) {
+  const el = document.getElementById(targetId || 'mom-output');
+  const p = prefix ? prefix + '-' : '';
   if (!rawData.length) {
-    el.innerHTML = `<div class="no-data-msg"><h3>No data loaded</h3><p>Go to Raw Data tab and connect a Google Sheet first, then come back here.</p></div>`;
+    el.innerHTML = `<div class="no-data-msg"><h3>No data loaded</h3><p>Go to L3 Report tab and connect a Google Sheet first, then come back here.</p></div>`;
     return;
   }
 
@@ -885,7 +982,7 @@ function generateMomReport() {
   const compDetected = uniqueStatuses.find(v => v.toLowerCase().includes('complet')) || 'Completed';
 
   const today     = new Date();
-  const d1Date    = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1); // D-1
+  const d1Date    = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1 - momOffsetDays);
   const curDay    = d1Date.getDate();
   const curYear   = d1Date.getFullYear();
   const curMonth  = d1Date.getMonth() + 1;
@@ -999,21 +1096,105 @@ function generateMomReport() {
     </tr></thead>`;
   }
 
+  const lastAnsP = lastInbRcvd ? lastInbAns/lastInbRcvd*100 : 0;
+  const curAnsP  = curInbRcvd  ? curInbAns /curInbRcvd *100 : 0;
+
+  // X-axis = [lastDateName, curDateName]  (dates on axis)
+  // Each metric = one dataset with 2 values [lastVal, curVal]
+  const dateLabels = [lastDateName, curDateName];
+
+  const COLORS = [
+    ['#38bdf8','#0ea5e9'], ['#22c55e','#16a34a'], ['#a78bfa','#7c3aed'],
+    ['#fb923c','#ea580c'], ['#f43f5e','#be123c'], ['#facc15','#ca8a04'],
+    ['#34d399','#059669'], ['#60a5fa','#2563eb']
+  ];
+
+  // ── Volume metrics (counts) — X = dates ──
+  const volMetrics = [
+    { label:'Calls Received',  vals:[lastInbRcvd,   curInbRcvd]  },
+    { label:'Calls Answered',  vals:[lastInbAns,    curInbAns]   },
+    { label:'Tickets Created', vals:[last.total,     cur.total]   },
+    { label:'ROC Count',       vals:[last.resolveOnCall, cur.resolveOnCall] },
+    { label:'L2 Tickets',      vals:[last.l2,        cur.l2]      },
+    { label:'Within 4h',       vals:[last.within4h,  cur.within4h]},
+    { label:'Pending > 4h',    vals:[last.pending4h, cur.pending4h]},
+    { label:'Pending > 48h',   vals:[last.pending48h,cur.pending48h]},
+  ];
+
+  // ── Rate metrics (%) — X = dates ──
+  const rateMetrics = [
+    { label:'Answered %', vals:[lastAnsP,       curAnsP]      },
+    { label:'ROC %',      vals:[isNaN(last.rocPct)?0:last.rocPct, isNaN(cur.rocPct)?0:cur.rocPct] },
+    { label:'W4h %',      vals:[isNaN(last.w4hPct)?0:last.w4hPct, isNaN(cur.w4hPct)?0:cur.w4hPct] },
+  ];
+
+  // ── Time metrics (hours) — X = dates ──
+  const timeMetrics = [
+    { label:'P50 Resolution', vals:[isNaN(last.p50)?0:+last.p50.toFixed(2), isNaN(cur.p50)?0:+cur.p50.toFixed(2)] },
+    { label:'P90 Resolution', vals:[isNaN(last.p90)?0:+last.p90.toFixed(2), isNaN(cur.p90)?0:+cur.p90.toFixed(2)] },
+  ];
+
+  // ── Daily per-day series for comparison chart ──
+  const maxDay = curDay;
+  function dayKey(y,m,d){ return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+  const ptlByDay = {};
+  rawData.forEach(r => {
+    const dk = normalizeDate(r[dateHeader]); if(!dk) return;
+    if(!ptlByDay[dk]) ptlByDay[dk] = [];
+    ptlByDay[dk].push(r);
+  });
+
+  const inbByDay = {};
+  if(inboundData.length){
+    const dtH=inboundHeaders[3],quH=inboundHeaders[6],dpH=inboundHeaders[10];
+    inboundData.forEach(row=>{
+      const rawD=String(row[dtH]||'').trim(); if(!rawD) return;
+      const dk=normalizeDate(rawD.split(' ')[0]); if(!dk) return;
+      if(!inbByDay[dk]) inbByDay[dk]={rcvd:0,ans:0};
+      const qu=String(row[quH]||'').trim(),dp=String(row[dpH]||'').trim().toUpperCase();
+      if(qu){inbByDay[dk].rcvd++;if(dp==='CONNECTED')inbByDay[dk].ans++;}
+    });
+  }
+
+  function calcPtlDay(dk){
+    const rows=ptlByDay[dk]||[]; const total=rows.length; if(!total) return{rocPct:null,w4hPct:null};
+    const roc=rows.filter(r=>String(r[statusHeader]||'').toLowerCase().includes(rocDetected.toLowerCase().slice(0,6))).length;
+    const l2=total-roc;
+    const w4h=rows.filter(r=>{const t=parseTimeToHours(r[timeHeader]);const done=String(r[statusHeader]||'').toLowerCase().includes(compDetected.toLowerCase().slice(0,6));return done&&!isNaN(t)&&t<=4;}).length;
+    return{rocPct:total?+(roc/total*100).toFixed(1):null, w4hPct:l2?+(w4h/l2*100).toFixed(1):null};
+  }
+
+  const dayLabels=[],curRocA=[],lastRocA=[],curW4hA=[],lastW4hA=[],curAnsA=[],lastAnsA=[];
+  for(let d=1;d<=maxDay;d++){
+    dayLabels.push(d);
+    const cK=dayKey(curYear,curMonth,d), lK=dayKey(lastYear,lastMonth,d);
+    const cp=calcPtlDay(cK), lp=calcPtlDay(lK);
+    curRocA.push(cp.rocPct); lastRocA.push(lp.rocPct);
+    curW4hA.push(cp.w4hPct); lastW4hA.push(lp.w4hPct);
+    const ci=inbByDay[cK]||{rcvd:0,ans:0}, li=inbByDay[lK]||{rcvd:0,ans:0};
+    curAnsA.push(ci.rcvd?+(ci.ans/ci.rcvd*100).toFixed(1):null);
+    lastAnsA.push(li.rcvd?+(li.ans/li.rcvd*100).toFixed(1):null);
+  }
+
   el.innerHTML = `
-    <div style="margin-bottom:20px;">
-      <h2 style="font-size:18px;font-weight:700;color:#f1f5f9;margin-bottom:4px;">Month Over Month Report</h2>
-      <p style="font-size:13px;color:#64748b;">
-        Comparing <b style="color:#fbbf24;">${lastDateName}</b>
-        vs <b style="color:#22c55e;">${curDateName}</b>
-      </p>
+    <!-- ══ HEADER ══ -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:#f1f5f9;margin:0 0 4px;">Month-over-Month Report</h2>
+        <p style="font-size:12px;color:#475569;margin:0;">Day-1 performance comparison</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button onclick="momOffsetDays++;generateMomReport('${targetId||'mom-output'}','${prefix||''}');" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#fbbf24;cursor:pointer;">◀ ${lastDateName}</button>
+        <span style="color:#475569;font-size:18px;font-weight:700;">vs</span>
+        <button onclick="if(momOffsetDays>0){momOffsetDays--;generateMomReport('${targetId||'mom-output'}','${prefix||''}');}" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#22c55e;cursor:pointer;${momOffsetDays===0?'opacity:0.4;cursor:not-allowed;':''}">▶ ${curDateName}</button>
+      </div>
     </div>
 
-    <div style="background:#1e293b;border:1px solid #334155;border-radius:12px;overflow:hidden;">
-      <div style="padding:14px 18px;border-bottom:1px solid #334155;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:14px;font-weight:700;color:#f1f5f9;">📋 PTL + Inbound Metrics</span>
-        <span style="font-size:11px;color:#64748b;background:#0f172a;padding:2px 10px;border-radius:20px;">
-          ${lastRows.length} tickets on ${lastDateName} &nbsp;·&nbsp; ${curRows.length} tickets on ${curDateName}
-        </span>
+    <!-- ══ TABLE ══ -->
+    <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;overflow:hidden;margin-bottom:22px;">
+      <div style="padding:12px 18px;border-bottom:1px solid #334155;">
+        <span style="font-size:13px;font-weight:700;color:#94a3b8;">All Metrics Summary</span>
       </div>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;">
@@ -1022,7 +1203,132 @@ function generateMomReport() {
         </table>
       </div>
     </div>
+
+    <!-- ══ CHARTS (dates on X-axis) ══ -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;">
+        <p style="font-size:13px;font-weight:700;color:#f1f5f9;margin:0 0 14px;">📊 Volume Metrics <span style="font-size:10px;color:#475569;font-weight:400;">(X = Date)</span></p>
+        <canvas id="${p}mom-chart-volume" height="260"></canvas>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;flex:1;">
+          <p style="font-size:13px;font-weight:700;color:#f1f5f9;margin:0 0 14px;">📈 Rate Metrics % <span style="font-size:10px;color:#475569;font-weight:400;">(X = Date)</span></p>
+          <canvas id="${p}mom-chart-rates" height="120"></canvas>
+        </div>
+        <div style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;flex:1;">
+          <p style="font-size:13px;font-weight:700;color:#f1f5f9;margin:0 0 14px;">⏱ Resolution Time <span style="font-size:10px;color:#475569;font-weight:400;">(X = Date)</span></p>
+          <canvas id="${p}mom-chart-time" height="120"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DAILY COMPARISON CHART ══ -->
+    <div style="margin-top:22px;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px;">
+      <p style="font-size:13px;font-weight:700;color:#f1f5f9;margin:0 0 14px;">📅 Daily Trend — ${months[lastMonth-1]} vs ${months[curMonth-1]} &nbsp;<span style="font-size:10px;color:#475569;font-weight:400;">(Answered % · ROC % · W4h %)</span></p>
+      <canvas id="${p}mom-daily-combined" height="160"></canvas>
+    </div>
   `;
+
+  // ── Destroy old charts ──
+  [p+'mom-chart-volume',p+'mom-chart-rates',p+'mom-chart-time',p+'mom-daily-combined'].forEach(id => {
+    const c = Chart.getChart(id); if (c) c.destroy();
+  });
+
+  const plugBase = { datalabels: { display:false } };
+  const tickStyle = { color:'#94a3b8', font:{ size:11 } };
+
+  function buildDatasets(metrics) {
+    return metrics.map((m, i) => ({
+      label: m.label,
+      data:  m.vals,
+      backgroundColor: COLORS[i % COLORS.length][0] + 'bb',
+      borderColor:     COLORS[i % COLORS.length][0],
+      borderWidth: 1.5,
+      borderRadius: 5,
+    }));
+  }
+
+  // Volume chart — X = dates, each metric = one dataset
+  new Chart(document.getElementById(p+'mom-chart-volume'), {
+    type: 'bar',
+    data: { labels: dateLabels, datasets: buildDatasets(volMetrics) },
+    options: {
+      responsive: true,
+      plugins: {
+        ...plugBase,
+        legend: { position:'bottom', labels:{ color:'#94a3b8', font:{size:10}, boxWidth:10, padding:8 } }
+      },
+      scales: {
+        x: { ticks: tickStyle, grid:{ color:'#334155' } },
+        y: { ticks: tickStyle, grid:{ color:'#334155' }, beginAtZero:true }
+      }
+    }
+  });
+
+  // Rates chart — X = dates
+  new Chart(document.getElementById(p+'mom-chart-rates'), {
+    type: 'bar',
+    data: { labels: dateLabels, datasets: buildDatasets(rateMetrics) },
+    options: {
+      responsive: true,
+      plugins: {
+        ...plugBase,
+        legend: { position:'bottom', labels:{ color:'#94a3b8', font:{size:10}, boxWidth:10, padding:6 } }
+      },
+      scales: {
+        x: { ticks: tickStyle, grid:{ color:'#334155' } },
+        y: { ticks:{ ...tickStyle, callback: v => v+'%' }, grid:{ color:'#334155' }, beginAtZero:true, max:100 }
+      }
+    }
+  });
+
+  // Time chart — X = dates
+  new Chart(document.getElementById(p+'mom-chart-time'), {
+    type: 'bar',
+    data: { labels: dateLabels, datasets: buildDatasets(timeMetrics) },
+    options: {
+      responsive: true,
+      plugins: {
+        ...plugBase,
+        legend: { position:'bottom', labels:{ color:'#94a3b8', font:{size:10}, boxWidth:10, padding:6 } }
+      },
+      scales: {
+        x: { ticks: tickStyle, grid:{ color:'#334155' } },
+        y: { ticks:{ ...tickStyle, callback: v => v+'h' }, grid:{ color:'#334155' }, beginAtZero:true }
+      }
+    }
+  });
+
+  // ── Daily comparison charts ──
+  const curMonthLabel = `${months[curMonth-1]} ${curYear}`;
+  const lastMonthLabel = `${months[lastMonth-1]} ${lastYear}`;
+
+  new Chart(document.getElementById(p+'mom-daily-combined'), {
+    type: 'line',
+    data: {
+      labels: dayLabels,
+      datasets: [
+        { label: `Answered % — ${curMonthLabel}`,  data: curAnsA,  borderColor:'#38bdf8', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false },
+        { label: `Answered % — ${lastMonthLabel}`, data: lastAnsA, borderColor:'#38bdf8', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false, borderDash:[5,4] },
+        { label: `ROC % — ${curMonthLabel}`,       data: curRocA,  borderColor:'#a78bfa', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false },
+        { label: `ROC % — ${lastMonthLabel}`,      data: lastRocA, borderColor:'#a78bfa', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false, borderDash:[5,4] },
+        { label: `W4h % — ${curMonthLabel}`,       data: curW4hA,  borderColor:'#34d399', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false },
+        { label: `W4h % — ${lastMonthLabel}`,      data: lastW4hA, borderColor:'#34d399', borderWidth:2, pointRadius:3, tension:0.3, spanGaps:true, fill:false, borderDash:[5,4] },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        datalabels: { display: false },
+        legend: { position:'bottom', labels:{ color:'#94a3b8', font:{size:10}, boxWidth:10, padding:8 } },
+        tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : '—'}` } }
+      },
+      scales: {
+        x: { title:{ display:true, text:'Day', color:'#475569', font:{size:10} }, ticks:{ ...tickStyle, maxTicksLimit:15 }, grid:{ color:'#1e3a5f' } },
+        y: { ticks:{ ...tickStyle, callback: v => v+'%' }, grid:{ color:'#334155' }, beginAtZero:true, max:100 }
+      }
+    }
+  });
 }
 
 // ── GENERATE REPORT ──
@@ -1099,7 +1405,7 @@ function generateReport() {
     const p90 = percentile(completedTimes, 90);
 
     const ticketsCreated = total - resolveOnCall;
-    const l2Tickets = ticketsCreated - resolveOnCall;
+    const l2Tickets = ticketsCreated;
 
     // Pending tickets (Sub Status = Open) — age from col B+C to NOW
     const now = new Date();
@@ -1204,55 +1510,57 @@ function generateReport() {
 
   const fmtH = v => isNaN(v) ? '—' : v.toFixed(2) + 'h';
   const pct  = (a, b) => b ? ((a/b)*100).toFixed(1) + '%' : '—';
-  const chartReport = [...report].reverse(); // oldest → newest for charts
+  const chartReport = [...report]; // newest → oldest (latest date first)
+  _chartReport = chartReport;
+  chartMonthSel = { c2: 'all', c3: 'all', c4: 'all' };
   const labels = chartReport.map(r => r.dateDisplay);
 
   document.getElementById('report-output').innerHTML = `
 
 
     <!-- MTD Row -->
-    <div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">MTD</div>
+    <div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">MTD — ${_curMName}</div>
     <div class="report-summary">
       ${inboundData.length ? `
       <div class="summary-card yellow">
         <div class="s-label">Total Call Received</div>
-        <div class="s-value">${grandInbRcvd.toLocaleString()}</div>
+        <div class="s-value">${_curInbRcvd.toLocaleString()}</div>
       </div>
       <div class="summary-card yellow">
         <div class="s-label">Answered %</div>
-        <div class="s-value">${grandInbAnsPct}</div>
+        <div class="s-value">${_curInbRcvd ? (_curInbAns/_curInbRcvd*100).toFixed(1)+'%' : '—'}</div>
       </div>` : ''}
       <div class="summary-card">
         <div class="s-label">Total Ticket Created</div>
-        <div class="s-value">${sumTotal.toLocaleString()}</div>
+        <div class="s-value">${_curM.total.toLocaleString()}</div>
       </div>
       <div class="summary-card">
         <div class="s-label">L2 Ticket</div>
-        <div class="s-value">${sumTickets.toLocaleString()}</div>
+        <div class="s-value">${_curM.tickets.toLocaleString()}</div>
       </div>
       <div class="summary-card green">
         <div class="s-label">Resolve on Call</div>
-        <div class="s-value">${sumROC.toLocaleString()}</div>
+        <div class="s-value">${_curM.roc.toLocaleString()}</div>
       </div>
       <div class="summary-card blue">
         <div class="s-label">Within 4 hrs</div>
-        <div class="s-value">${sumW4.toLocaleString()}</div>
+        <div class="s-value">${_curM.w4.toLocaleString()}</div>
       </div>
       <div class="summary-card yellow">
         <div class="s-label">P50</div>
-        <div class="s-value">${fmtH(overallP50)}</div>
+        <div class="s-value">${fmtH(_curM.p50)}</div>
       </div>
       <div class="summary-card yellow">
         <div class="s-label">P90</div>
-        <div class="s-value">${fmtH(overallP90)}</div>
+        <div class="s-value">${fmtH(_curM.p90)}</div>
       </div>
       <div class="summary-card" style="border-color:#fb923c44;">
         <div class="s-label">Pending &gt; 4h</div>
-        <div class="s-value" style="color:#fb923c;">${sumP4h.toLocaleString()}</div>
+        <div class="s-value" style="color:#fb923c;">${_curM.p4h.toLocaleString()}</div>
       </div>
       <div class="summary-card" style="border-color:#f8717144;">
         <div class="s-label">Pending &gt; 48h</div>
-        <div class="s-value" style="color:#f87171;">${sumP48h.toLocaleString()}</div>
+        <div class="s-value" style="color:#f87171;">${_curM.p48h.toLocaleString()}</div>
       </div>
     </div>
 
@@ -1406,22 +1714,31 @@ function generateReport() {
               ${report.map(r => `<td style="text-align:right;color:#f87171">${r.pending48h}</td>`).join('')}
             </tr>
           </tbody>
+          <tfoot>
+            <tr style="background:#1a2744;font-weight:700;border-top:2px solid #334155;">
+              <td class="td-date" style="position:sticky;left:0;background:#1a2744;z-index:2;color:#fbbf24;padding:12px 16px;">Grand Total</td>
+              <td style="text-align:right;color:#fbbf24;padding:12px 16px;position:sticky;left:180px;z-index:2;background:#1a2744;">${sumTotal}</td>
+              <td style="text-align:right;color:#22c55e;padding:12px 16px;position:sticky;left:246px;z-index:2;background:#0a1020;">${_curM.total}</td>
+              <td style="text-align:right;color:#fbbf24;padding:12px 16px;position:sticky;left:326px;z-index:2;background:#0a1020;">${_lastM.total}</td>
+              ${report.map(r => `<td style="text-align:right;color:#fbbf24;padding:12px 16px;">${r.total}</td>`).join('')}
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
 
     <div class="report-charts">
       <div class="report-chart-panel" style="grid-column:1/-1;">
-        <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3></div>
+        <div class="panel-header"><h3>P50 / P90 Resolution Time (Completed only)</h3><div id="chart2-filter"></div></div>
         <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-2"></canvas></div></div>
       </div>
       ${inboundData.length ? `
       <div class="report-chart-panel" style="grid-column:1/-1;">
-        <div class="panel-header"><h3>Daily Inbound — Call Initiated vs Call Landed (Received)</h3></div>
+        <div class="panel-header"><h3>Daily Inbound — Call Initiated vs Call Landed (Received)</h3><div id="chart3-filter"></div></div>
         <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-3"></canvas></div></div>
       </div>
       <div class="report-chart-panel" style="grid-column:1/-1;">
-        <div class="panel-header"><h3>Call Not Landed — Working Hours vs Non-Working Hours</h3></div>
+        <div class="panel-header"><h3>Call Not Landed — Working Hours vs Non-Working Hours</h3><div id="chart4-filter"></div></div>
         <div class="report-chart-body"><div class="report-chart-wrap"><canvas id="report-chart-4"></canvas></div></div>
       </div>` : ''}
     </div>
@@ -1452,6 +1769,9 @@ function generateReport() {
           inbAnsweredByDate[dk] = (inbAnsweredByDate[dk]||0) + 1;
       }
     });
+    _inbInitByDate = inbInitByDate;
+    _inbLandedByDate = inbLandedByDate;
+    _inbAnsweredByDate = inbAnsweredByDate;
     const inbLabels      = chartReport.map(r => r.dateDisplay);
     const inbInitData    = chartReport.map(r => inbInitByDate[r.dateKey]    || 0);
     const inbLandedData  = chartReport.map(r => inbLandedByDate[r.dateKey]  || 0);
@@ -1471,6 +1791,8 @@ function generateReport() {
 
     // Chart 4 — Not Landed Working vs Non-Working
     const inbNotLandedWorkByDate = {}, inbNotLandedNonWorkByDate = {};
+    _inbNotLandedWorkByDate = inbNotLandedWorkByDate;
+    _inbNotLandedNonWorkByDate = inbNotLandedNonWorkByDate;
     inboundData.forEach(row => {
       const rawD = String(row[dtH]||'').trim(); if (!rawD) return;
       const dk = normalizeDate(rawD.split(' ')[0]); if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
@@ -1486,11 +1808,41 @@ function generateReport() {
       plugins: [ChartDataLabels],
       data: { labels: inbLabels, datasets: [
         { label: 'Not Landed (Working Hrs)',     data: chartReport.map(r => inbNotLandedWorkByDate[r.dateKey]    || 0), borderColor: '#f87171', backgroundColor: 'rgba(248,113,113,0.08)', borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#f87171', anchor: 'end', align: 'top',    font: { size: 10, weight: '600' }, formatter: v => v || '' } },
-        { label: 'Not Landed (Non-Working Hrs)', data: chartReport.map(r => inbNotLandedNonWorkByDate[r.dateKey] || 0), borderColor: '#fb923c', backgroundColor: 'rgba(251,146,60,0.08)',  borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#fb923c', anchor: 'end', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
+        { label: 'Not Landed (Non-Working Hrs)', data: chartReport.map(r => inbNotLandedNonWorkByDate[r.dateKey] || 0), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.08)',  borderWidth: 2, pointRadius: 5, tension: 0.3, fill: false, spanGaps: true, datalabels: { color: '#60a5fa', anchor: 'end', align: 'bottom', font: { size: 10, weight: '600' }, formatter: v => v || '' } },
       ]},
       options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: 24, bottom: 16 } }, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, datalabels: {} }, scales: { x: { ticks: { color: '#64748b', maxRotation: 45, font: { size: 10 } }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#334155' } } } }
     });
   }
+
+  // Populate month filter buttons for all 3 charts
+  setTimeout(() => {
+    const months = [...new Set(_chartReport.map(r => r.dateKey.slice(0,7)))].sort();
+    ['chart2-filter','chart3-filter','chart4-filter'].forEach((filterId, idx) => {
+      const chartKey = ['c2','c3','c4'][idx];
+      const el = document.getElementById(filterId);
+      if (!el) return;
+      const btnStyle = (active) => `padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid ${active?'#6366f1':'#334155'};background:${active?'#6366f1':'transparent'};color:${active?'#fff':'#94a3b8'};`;
+      el.innerHTML = ['all', ...months].map(mk => {
+        const label = mk === 'all' ? 'All' : new Date(mk+'-01').toLocaleString('en-IN',{month:'short',year:'2-digit'});
+        const active = chartMonthSel[chartKey] === mk;
+        return `<button style="${btnStyle(active)}" onclick="selectChartMonth('${chartKey}','${mk}')">${label}</button>`;
+      }).join(' ');
+    });
+  }, 100);
+
+  // ── Section 7: Date Wise Summary ──
+  document.getElementById('report-output').insertAdjacentHTML('beforeend',
+    '<div style="margin-top:28px;">' + buildInboundSummaryHtml() + '</div>'
+  );
+
+  // ── Section 8: Month-over-Month Report ──
+  document.getElementById('report-output').insertAdjacentHTML('beforeend',
+    '<div style="margin-top:28px;">' +
+    '<div style="font-size:10px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Month-over-Month Report</div>' +
+    '<div id="l3-mom-section"></div>' +
+    '</div>'
+  );
+  generateMomReport('l3-mom-section', 'l3');
 }
 
 // ── AUTO-REFRESH ──
@@ -1950,6 +2302,7 @@ function setStatus(type, msg) {
 
 // ── INBOUND CALL REPORT ──
 let inboundData = [], inboundHeaders = [];
+let momOffsetDays = 0;
 
 function switchInboundSubTab(name) {
   ['rawview','agentwise'].forEach(t => {
@@ -2096,7 +2449,7 @@ function renderInboundReport() {
   const grandAnswered         = agents.reduce((s,a)=>s+agentTotals[a],0);
 
   // All metrics and agents lists for filters
-  const allMetrics = ['Total Call Initiate','Call Not Landed in Queue (Working Hours)','Call Not Landed in Queue (Non-Working Hours)','Total Call Received','Total Call Answered','Answered %'];
+  const allMetrics = ['Total Call Initiate','Total Call Received','Total Call Answered','Answered %','Call Not Landed in Queue (Working Hours)','Call Not Landed in Queue (Non-Working Hours)'];
 
   outputEl.innerHTML = `
 
@@ -2128,16 +2481,6 @@ function renderInboundReport() {
             <td style="text-align:right;font-weight:700;background:#1a2744;">${grandInitiate}</td>
             ${dates.map(d=>`<td style="text-align:right;">${dateInitiate[d]||0}</td>`).join('')}
           </tr>
-          <tr data-metric="Call Not Landed in Queue (Working Hours)">
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
-            <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${grandNotLandedWork}</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dateNotLandedWork[d]||0}</td>`).join('')}
-          </tr>
-          <tr data-metric="Call Not Landed in Queue (Non-Working Hours)">
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fb923c;">Call Not Landed in Queue (Non-Working Hours)</td>
-            <td style="text-align:right;font-weight:700;color:#fb923c;background:#1a2744;">${grandNotLandedNonWork}</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dateNotLandedNonWork[d]||0}</td>`).join('')}
-          </tr>
           <tr data-metric="Total Call Received">
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
             <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${grandReceived}</td>
@@ -2153,9 +2496,21 @@ function renderInboundReport() {
             <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(grandAnswered,grandReceived)}</td>
             ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dateAnswered[d]||0,dateReceived[d]||0)}</td>`).join('')}
           </tr>
+          <tr data-metric="Call Not Landed in Queue (Working Hours)">
+            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
+            <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${grandNotLandedWork}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dateNotLandedWork[d]||0}</td>`).join('')}
+          </tr>
+          <tr data-metric="Call Not Landed in Queue (Non-Working Hours)">
+            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#60a5fa;">Call Not Landed in Queue (Non-Working Hours)</td>
+            <td style="text-align:right;font-weight:700;color:#60a5fa;background:#1a2744;">${grandNotLandedNonWork}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#60a5fa;">${dateNotLandedNonWork[d]||0}</td>`).join('')}
+          </tr>
         </tbody>
       </table>
     </div>
+
+    ${buildIvrSlabTableHtml()}
 
     <!-- ── AGENT WISE TABLE ── -->
     <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:12px;">👤 Agent Wise Report</div>
@@ -2249,6 +2604,98 @@ function renderInboundReport() {
   `;
 }
 
+function parseIvrSecs(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const s = String(val).trim();
+  if (!s) return null;
+  if (/^\d+:\d{2}:\d{2}$/.test(s)) { const [h,m,sec]=s.split(':').map(Number); return h*3600+m*60+sec; }
+  if (/^\d+:\d{2}$/.test(s))        { const [m,sec]=s.split(':').map(Number); return m*60+sec; }
+  const n = parseFloat(s);
+  return isNaN(n) ? null : Math.round(n);
+}
+
+function buildIvrSlabTableHtml() {
+  if (!inboundData.length) return '';
+
+  const dateH  = inboundHeaders[3];   // col D — date+time
+  const queueH = inboundHeaders[6];   // col G — queue name
+  const ivrH   = inboundHeaders[15];  // col P — IVR time
+
+  const SLABS = [
+    { label:'0–5 sec',   min:0,  max:5   },
+    { label:'6–10 sec',  min:6,  max:10  },
+    { label:'11–15 sec', min:11, max:15  },
+    { label:'16–20 sec', min:16, max:20  },
+    { label:'21–25 sec', min:21, max:25  },
+    { label:'26–30 sec', min:26, max:30  },
+    { label:'31–35 sec', min:31, max:35  },
+    { label:'36–40 sec', min:36, max:40  },
+    { label:'41–45 sec', min:41, max:45  },
+    { label:'46–50 sec', min:46, max:50  },
+    { label:'51–55 sec', min:51, max:55  },
+    { label:'56–60 sec', min:56, max:60  },
+    { label:'> 1 min',   min:61, max:Infinity },
+  ];
+  const SLAB_COLORS = ['#38bdf8','#22c55e','#a78bfa','#fb923c','#f43f5e','#facc15','#34d399','#60a5fa','#e879f9','#fbbf24','#f87171','#94a3b8','#ef4444'];
+
+  const fmtD = dk => new Date(dk+'T00:00:00').toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+
+  function buildOneTable(isWorking) {
+    const dateSlab = {}, dateSet = new Set();
+    inboundData.forEach(row => {
+      const rawDate = String(row[dateH]||'').trim(); if (!rawDate) return;
+      const dk = normalizeDate(rawDate.split(' ')[0]); if (!/^\d{4}-\d{2}-\d{2}$/.test(dk)) return;
+      if (String(row[queueH]||'').trim()) return; // only not-landed
+      const wh = isWorkingHoursCall(rawDate);
+      if (isWorking ? !wh : wh) return;
+      const ivr = parseIvrSecs(row[ivrH]); if (ivr === null) return;
+      dateSet.add(dk);
+      if (!dateSlab[dk]) dateSlab[dk] = {};
+      const slab = SLABS.find(s => ivr >= s.min && ivr <= s.max);
+      if (slab) dateSlab[dk][slab.label] = (dateSlab[dk][slab.label]||0)+1;
+    });
+
+    const dates = [...dateSet].sort().reverse();
+    if (!dates.length) return '';
+    const slabTotals = {};
+    SLABS.forEach(s => { slabTotals[s.label] = dates.reduce((sum,dk)=>sum+(dateSlab[dk]?.[s.label]||0),0); });
+
+    const icon  = isWorking ? '🔴' : '🟠';
+    const title = isWorking
+      ? 'Call Not Landed (Working Hours) — IVR Time Slab Breakdown'
+      : 'Call Not Landed (Non-Working Hours) — IVR Time Slab Breakdown';
+    const borderColor = isWorking ? '#f87171' : '#fb923c';
+
+    return `
+    <div style="font-size:14px;font-weight:700;color:#f1f5f9;margin-bottom:12px;margin-top:4px;">
+      ${icon} ${title}
+    </div>
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid ${borderColor}44;margin-bottom:28px;">
+      <table class="report-table" style="min-width:100%;">
+        <thead>
+          <tr>
+            <th style="min-width:160px;position:sticky;left:0;z-index:3;background:#0f172a;">IVR Time Slab</th>
+            <th style="text-align:right;background:#1a2744;color:#93c5fd;white-space:nowrap;">Total</th>
+            ${dates.map(d=>`<th style="text-align:right;white-space:nowrap;">${fmtD(d)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${SLABS.map((s,i)=>{
+            const color=SLAB_COLORS[i%SLAB_COLORS.length];
+            return `<tr>
+              <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:${color};">${s.label}</td>
+              <td style="text-align:right;font-weight:700;color:${color};background:#1a2744;">${slabTotals[s.label]||''}</td>
+              ${dates.map(dk=>`<td style="text-align:right;color:${color};">${dateSlab[dk]?.[s.label]||''}</td>`).join('')}
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  }
+
+  return buildOneTable(true) + buildOneTable(false);
+}
+
 function buildInboundSummaryHtml() {
   if (!inboundData.length) {
     return `<div style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#64748b;">
@@ -2306,16 +2753,6 @@ function buildInboundSummaryHtml() {
             ${dates.map(d=>`<td style="text-align:right;">${dInit[d]||0}</td>`).join('')}
           </tr>
           <tr>
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
-            <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${gNotLW}</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dNotLandedWork[d]||0}</td>`).join('')}
-          </tr>
-          <tr>
-            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fb923c;">Call Not Landed in Queue (Non-Working Hours)</td>
-            <td style="text-align:right;font-weight:700;color:#fb923c;background:#1a2744;">${gNotLN}</td>
-            ${dates.map(d=>`<td style="text-align:right;color:#fb923c;">${dNotLandedNonWork[d]||0}</td>`).join('')}
-          </tr>
-          <tr>
             <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#fbbf24;">Total Call Received</td>
             <td style="text-align:right;font-weight:700;color:#fbbf24;background:#1a2744;">${gRcvd}</td>
             ${dates.map(d=>`<td style="text-align:right;color:#fbbf24;">${dReceived[d]||0}</td>`).join('')}
@@ -2330,9 +2767,46 @@ function buildInboundSummaryHtml() {
             <td style="text-align:right;font-weight:700;color:#818cf8;background:#1a2744;">${pct(gAns,gRcvd)}</td>
             ${dates.map(d=>`<td style="text-align:right;color:#818cf8;">${pct(dAnswered[d]||0,dReceived[d]||0)}</td>`).join('')}
           </tr>
+          <tr>
+            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#f87171;">Call Not Landed in Queue (Working Hours)</td>
+            <td style="text-align:right;font-weight:700;color:#f87171;background:#1a2744;">${gNotLW}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#f87171;">${dNotLandedWork[d]||0}</td>`).join('')}
+          </tr>
+          <tr>
+            <td class="td-date" style="position:sticky;left:0;background:#1e293b;z-index:1;color:#60a5fa;">Call Not Landed in Queue (Non-Working Hours)</td>
+            <td style="text-align:right;font-weight:700;color:#60a5fa;background:#1a2744;">${gNotLN}</td>
+            ${dates.map(d=>`<td style="text-align:right;color:#60a5fa;">${dNotLandedNonWork[d]||0}</td>`).join('')}
+          </tr>
         </tbody>
       </table>
-    </div>`;
+    </div>
+    ${buildIvrSlabTableHtml()}`;
+}
+
+async function slackPublish() {
+  openChannelPicker(async (channelId, channelName) => {
+    const btn = document.getElementById('btn-slack-publish');
+    btn.disabled = true;
+    btn.textContent = '⏳ Generating...';
+    try {
+      const res = await fetch('/api/publish-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ channel: channelId })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        btn.textContent = '✅ Sent!';
+        setTimeout(() => { btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg> Slack Publish'; }, 3000);
+      } else {
+        alert('Error: ' + (data.error || 'Unknown error'));
+        btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/></svg> Slack Publish';
+      }
+    } catch(e) {
+      alert('Error: ' + e.message);
+      btn.disabled = false; btn.textContent = 'Slack Publish';
+    }
+  });
 }
 
 function sendToTrustLineTeam() {
@@ -2432,8 +2906,8 @@ async function _doSendInbound(CHANNEL) {
 async function sendReportToSlack(opts = {}) {
   if (!rawData.length) return alert('Generate the report first.');
 
-  const SLACK_TOKEN   = opts.token   || document.getElementById('slack-token').value.trim();
-  const SLACK_CHANNEL = opts.channel || document.getElementById('slack-channel').value.trim();
+  const SLACK_TOKEN   = opts.token   || (document.getElementById('slack-token')?.value.trim() ?? '');
+  const SLACK_CHANNEL = opts.channel || (document.getElementById('slack-channel')?.value.trim() ?? '');
   if (!SLACK_TOKEN) return alert('Please enter your Slack Bot Token.');
 
   // Re-compute report data
@@ -2486,21 +2960,25 @@ async function sendReportToSlack(opts = {}) {
 
   if (!reportRows.length) return alert('No report data found.');
 
-  // FTD = latest date
+  // FTD = latest date in data
   const ftd = reportRows[reportRows.length - 1];
   const ftdDate = new Date(ftd.dk + 'T00:00:00').toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
 
-  // MTD = grand totals
-  const mtdTotal   = reportRows.reduce((s,r)=>s+r.total,0);
-  const mtdROC     = reportRows.reduce((s,r)=>s+r.roc,0);
-  const mtdTickets = reportRows.reduce((s,r)=>s+r.tickets,0);
-  const mtdW4      = reportRows.reduce((s,r)=>s+r.w4,0);
-  const mtdP4h     = reportRows.reduce((s,r)=>s+r.pending4h,0);
-  const mtdP48h    = reportRows.reduce((s,r)=>s+r.pending48h,0);
-  const mtdP50 = percentile(reportRows.filter(r=>!isNaN(r.p50)).map(r=>r.p50).sort((a,b)=>a-b), 50);
-  const mtdP90 = percentile(reportRows.filter(r=>!isNaN(r.p90)).map(r=>r.p90).sort((a,b)=>a-b), 90);
+  // MTD = same month as FTD (latest month in data)
+  const ftdMKey  = ftd.dk.slice(0, 7); // "YYYY-MM"
+  const ftdMName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(ftd.dk.slice(5,7))-1];
+  const mtdRows  = reportRows.filter(r => r.dk.startsWith(ftdMKey));
 
-  // Inbound FTD & MTD
+  const mtdTotal   = mtdRows.reduce((s,r)=>s+r.total,0);
+  const mtdROC     = mtdRows.reduce((s,r)=>s+r.roc,0);
+  const mtdTickets = mtdRows.reduce((s,r)=>s+r.tickets,0);
+  const mtdW4      = mtdRows.reduce((s,r)=>s+r.w4,0);
+  const mtdP4h     = mtdRows.reduce((s,r)=>s+r.pending4h,0);
+  const mtdP48h    = mtdRows.reduce((s,r)=>s+r.pending48h,0);
+  const mtdP50 = percentile(mtdRows.filter(r=>!isNaN(r.p50)).map(r=>r.p50).sort((a,b)=>a-b), 50);
+  const mtdP90 = percentile(mtdRows.filter(r=>!isNaN(r.p90)).map(r=>r.p90).sort((a,b)=>a-b), 90);
+
+  // Inbound FTD & MTD (same month as FTD)
   let inbFtdRcvd=0, inbFtdAns=0, inbMtdRcvd=0, inbMtdAns=0;
   if (inboundData.length) {
     const dtH=inboundHeaders[3], quH=inboundHeaders[6], dpH=inboundHeaders[10];
@@ -2513,14 +2991,15 @@ async function sendReportToSlack(opts = {}) {
     });
     inbFtdRcvd = iRcvd[ftd.dk] || 0;
     inbFtdAns  = iAns[ftd.dk]  || 0;
-    inbMtdRcvd = Object.values(iRcvd).reduce((s,v)=>s+v,0);
-    inbMtdAns  = Object.values(iAns).reduce((s,v)=>s+v,0);
+    Object.entries(iRcvd).forEach(([dk, cnt]) => {
+      if (dk.startsWith(ftdMKey)) { inbMtdRcvd += cnt; inbMtdAns += (iAns[dk]||0); }
+    });
   }
 
   const pad = (v, n) => String(v).padEnd(n);
   const text = [
     `*:bar_chart: PTL Management Report*`,
-    `*FTD: ${ftdDate}* | *MTD: ${ftd.dk.slice(5,7)}/${ftd.dk.slice(0,4)}*`,
+    `*FTD: ${ftdDate}* | *MTD: ${ftdMName} ${ftd.dk.slice(0,4)}*`,
     ``,
     `\`\`\``,
     `Metric                  | FTD       | MTD`,

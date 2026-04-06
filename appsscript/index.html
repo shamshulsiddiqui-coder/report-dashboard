@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shamshul</title>
+  <title>PTL Report</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -192,11 +192,11 @@
 <body>
 
 <header>
-  <h1>Shamshul</h1>
+  <h1>PTL Report</h1>
   <span class="slogan">⚡ WIOM — Ghar Ka Net</span>
   <button id="theme-toggle" onclick="toggleTheme()" style="padding:6px 14px;border-radius:8px;border:1px solid #78350f;background:transparent;color:#fbbf24;font-size:13px;cursor:pointer;">🌙 Dark</button>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('dashboard')">Raw Data</button>
+    <button class="tab-btn active" onclick="switchTab('dashboard')">L3 Report</button>
     <button class="tab-btn" onclick="switchTab('report')">PTL Management Report</button>
     <button class="tab-btn" onclick="switchTab('agentreport')">Agent Wise Report</button>
     <button class="tab-btn" onclick="switchTab('analysis')">Analysis</button>
@@ -263,7 +263,7 @@
 
     <div class="panel" id="raw-table-panel" style="display:none">
       <div class="panel-header">
-        <h3>Raw Data</h3>
+        <h3>L3 Report</h3>
         <span style="font-size:12px;color:#64748b" id="row-count"></span>
       </div>
       <div class="table-wrap" id="raw-table"></div>

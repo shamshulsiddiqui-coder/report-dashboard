@@ -1,10 +1,10 @@
 // ══════════════════════════════════════════════════════
-// Shamshul — Google Apps Script Backend
+// PTL Report — Google Apps Script Backend
 // ══════════════════════════════════════════════════════
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('index')
-    .setTitle('Shamshul')
+    .setTitle('PTL Report')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

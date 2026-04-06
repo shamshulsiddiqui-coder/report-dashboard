@@ -2,6 +2,9 @@ const express = require('express');
 const https = require('https');
 const http = require('http');
 const path = require('path');
+const { spawn } = require('child_process');
+const cron = require('node-cron');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -178,6 +181,22 @@ app.post('/api/slack-upload', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Publish report as image to Slack
+app.post('/api/publish-image', (req, res) => {
+  const { channel } = req.body;
+  if (!channel) return res.status(400).json({ error: 'Missing channel' });
+  const script = path.join(__dirname, 'slack_report_image.js');
+  const child = spawn(process.execPath, [script, channel], { cwd: __dirname });
+  let out = '', err = '';
+  child.stdout.on('data', d => out += d);
+  child.stderr.on('data', d => err += d);
+  child.on('close', code => {
+    if (code === 0) res.json({ ok: true, log: out.trim() });
+    else res.status(500).json({ ok: false, error: err.trim() || out.trim() });
+  });
+  child.on('error', e => res.status(500).json({ ok: false, error: e.message }));
 });
 
 // Deploy — trigger Railway redeploy from latest GitHub commit
