@@ -10,7 +10,7 @@ const fs     = require('fs');
 const path   = require('path');
 const { execSync } = require('child_process');
 
-const SLACK_TOKEN   = '';
+const SLACK_TOKEN   = process.env.SLACK_BOT_TOKEN || '';  // set via env var
 const SLACK_CHANNEL = process.argv[2] || 'C0AJZBS9GFM'; // channel from CLI arg or default
 
 // ── helpers ──────────────────────────────────────────────────────────────────
